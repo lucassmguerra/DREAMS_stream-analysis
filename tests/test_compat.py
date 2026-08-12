@@ -191,13 +191,21 @@ def test_config_values_match_signature_defaults(api):
     assert sig.parameters["poly_degree"].default == api.KINEMATICS.poly_degree
 
     sig = inspect.signature(api.detect_stream_psd_metrics)
-    assert sig.parameters["snr_threshold"].default == api.SPECTRA.snr_threshold
     assert sig.parameters["min_bins"].default == api.SPECTRA.min_bins
     assert (
         sig.parameters["conservative_nyquist_frac"].default
         == api.SPECTRA.conservative_nyquist_frac
     )
     assert sig.parameters["method"].default == api.SPECTRA.method
+    # snr_threshold resolves per method rather than carrying one literal default.
+    from stream_analysis.spectra import _DEFAULT_SNR_THRESHOLD
+
+    assert sig.parameters["snr_threshold"].default is None
+    assert _DEFAULT_SNR_THRESHOLD[api.SPECTRA.method] == api.SPECTRA.snr_threshold
+    assert (
+        _DEFAULT_SNR_THRESHOLD[api.SPECTRA.published_method]
+        == api.SPECTRA.published_snr_threshold
+    )
 
     sig = inspect.signature(api.compute_welch_psd)
     assert sig.parameters["nperseg_frac"].default == api.SPECTRA.nperseg_frac

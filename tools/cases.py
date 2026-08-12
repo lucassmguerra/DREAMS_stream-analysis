@@ -987,49 +987,14 @@ for _state in STATES:
     for _i in SAMPLE_STREAMS:
         CASES[f"detect_ratio95__{_state}_{_i}"] = _detect(_state, _i, "ratio95")
 
-# band_snr scans every contiguous band and integrates all 1000 realizations
-# inside each, so it is orders of magnitude more expensive than ratio95. It is
-# covered on one stream per state rather than on all of SAMPLE_STREAMS.
-for _state in STATES:
-    CASES[f"detect_band_snr__{_state}_0"] = _detect(_state, 0, "band_snr")
-
-
-@case("detect_band_snr_detailed")
-def _(api, fx):
-    phi1, _p2, _L = fx.track("unperturb", 0)
-    out = api.compute_linearized_density(phi1, detrend="poly", smoothing_sigma=1, bin_width=0.25)
-    psd_out = api.compute_welch_psd(out["resid"], out["w"])
-    res = api.compute_sampling_psd_realizations(
-        out["hist_counts"], smoothing_sigma_bins=1, w=out["w"], n_realizations=200, rng_seed=12345
-    )
-    return api.detect_stream_psd_metrics(
-        psd_out["freqs"],
-        psd_out["psd"],
-        w=out["w"],
-        psd_all=res["psd_all"],
-        method="band_snr",
-        nperseg=res["nperseg"],
-        detailed=True,
-    )
-
-
-@case("detect_ratio95_detailed")
-def _(api, fx):
-    phi1, _p2, _L = fx.track("unperturb", 6)
-    out = api.compute_linearized_density(phi1, detrend="poly", smoothing_sigma=1, bin_width=0.25)
-    psd_out = api.compute_welch_psd(out["resid"], out["w"])
-    res = api.compute_sampling_psd_realizations(
-        out["hist_counts"], smoothing_sigma_bins=1, w=out["w"], n_realizations=200, rng_seed=12345
-    )
-    return api.detect_stream_psd_metrics(
-        psd_out["freqs"],
-        psd_out["psd"],
-        w=out["w"],
-        psd_all=res["psd_all"],
-        method="ratio95",
-        nperseg=res["nperseg"],
-        detailed=True,
-    )
+# Deliberately absent from the frozen contract, because their behavior changed
+# on purpose after the refactor. See DIVERGENCES below and tests/test_detection.py.
+#
+#   detect_band_snr__*          band_snr's min_lambda_band selection was fixed
+#   detect_band_snr_detailed    same, plus new keys in the detailed dict
+#   detect_ratio95_detailed     new keys in the detailed dict
+#   detect_edge_bad_method      method is now validated earlier, new message
+#   pipeline_band_snr__*        follows from the band_snr fix
 
 
 @case("detect_edge_no_mc_input")
@@ -1054,13 +1019,6 @@ def _(api, fx):
     rng = np.random.default_rng(12345)
     psd = rng.random(33)
     return api.detect_stream_psd_metrics(freqs, psd, w=0.25, method="ratio95")
-
-
-@case("detect_edge_bad_method")
-def _(api, fx):
-    freqs = np.linspace(0.0, 2.0, 33)
-    rng = np.random.default_rng(12345)
-    return api.detect_stream_psd_metrics(freqs, rng.random(33), w=0.25, method="chi2")
 
 
 @case("detect_edge_length_mismatch")
@@ -1126,4 +1084,35 @@ def _pipeline(state: str, method: str) -> Runner:
 
 for _state in STATES:
     CASES[f"pipeline_ratio95__{_state}"] = _pipeline(_state, "ratio95")
-CASES["pipeline_band_snr__unperturb"] = _pipeline("unperturb", "band_snr")
+
+
+# --------------------------------------------------------------- divergences
+
+#: Behavior that changed on purpose after the refactor, so it is not part of the
+#: frozen contract and has no golden. Each entry names where it is tested
+#: instead. Nothing else in this file diverges from the frozen source.
+DIVERGENCES: dict[str, str] = {
+    "detect_stream_psd_metrics(method='band_snr')": (
+        "min_lambda_band now comes from bands of exactly min_bins frequency bins "
+        "rather than from the upper edge of any qualifying band, which used to "
+        "pin it to the top of the trusted range for every stream. "
+        "tests/test_detection.py"
+    ),
+    "detect_stream_psd_metrics(method='peak_snr')": (
+        "New. Per-frequency SNR against the Monte Carlo floor. Now the default "
+        "method, at a 5-sigma threshold. tests/test_detection.py"
+    ),
+    "detect_stream_psd_metrics(detailed=True)": (
+        "The detailed dict gained freqs, psd_null_std and snr_per_freq. "
+        "tests/test_detection.py"
+    ),
+    "detect_stream_psd_metrics(method=<unknown>)": (
+        "Validated at the top of the function rather than after the scalar "
+        "metrics are computed, so the message names all three methods. "
+        "tests/test_detection.py"
+    ),
+    "build_metrics_table(method=...)": (
+        "Defaults to peak_snr at 5 sigma rather than to the published ratio95 at "
+        "3. Only min_lambda_band differs. tests/test_pipeline.py"
+    ),
+}

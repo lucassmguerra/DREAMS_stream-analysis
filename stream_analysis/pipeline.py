@@ -15,12 +15,12 @@ than changes to the contract.
     None, and nothing is written.
 
 ``method``
-    Exposed as a keyword instead of being hardcoded. The default is
-    ``"ratio95"``, which is what the published pipeline used. The alternative
-    ``"band_snr"`` is described as preferred in the ``detect_stream_psd_metrics``
-    docstring, but as written its ``min_lambda_band`` always comes out as
-    ``1 / f_top_trusted``, the shortest wavelength the binning can represent, so
-    it reports the edge of the trusted band rather than a detected scale. See
+    Exposed as a keyword instead of being hardcoded, and defaulting to
+    ``"peak_snr"`` at a 5-sigma threshold rather than to the ``"ratio95"`` at 3
+    that the published run used. This is the one place the new pipeline
+    deliberately produces a different number from the old one, in the
+    ``min_lambda_band`` column only. Pass ``method="ratio95",
+    snr_threshold=3.0`` to reproduce the published table exactly. See
     FINDINGS.md entry 5.
 
 Index alignment
@@ -162,7 +162,8 @@ def build_metrics_table(
     df_orbits: pd.DataFrame,
     *,
     checkpoint_path: str | Path | None = None,
-    method: str = SPECTRA.pipeline_method,
+    method: str = SPECTRA.method,
+    snr_threshold: float | None = None,
     bin_size: float = BINNED.bin_size,
     bin_width: float = DENSITY.bin_width,
     smoothing_sigma: float = DENSITY.smoothing_sigma,
@@ -204,9 +205,12 @@ def build_metrics_table(
         before the power spectra run, so a long job can be resumed or inspected.
         Nothing is written when None, which is the default.
     method : str, keyword-only
-        PSD detection method, "ratio95" or "band_snr". Defaults to "ratio95",
-        which is what the published pipeline used. See FINDINGS.md entry 5 before
-        choosing "band_snr".
+        PSD detection method, "peak_snr", "band_snr" or "ratio95". Defaults to
+        "peak_snr", a per-frequency signal-to-noise ratio at 5 sigma. The
+        published table used "ratio95" at 3.
+    snr_threshold : float or None, keyword-only
+        Detection threshold. None lets each method use its own default, 5.0 for
+        "peak_snr" and 3.0 for the other two.
     bin_size : float, keyword-only
         Bin width along the length-rescaled phi1. The default 1/8 gives the eight
         bins of the paper.
@@ -315,6 +319,7 @@ def build_metrics_table(
             w=out["w"],
             psd_all=res["psd_all"],
             method=method,
+            snr_threshold=snr_threshold,
             nperseg=res["nperseg"],
         )
 

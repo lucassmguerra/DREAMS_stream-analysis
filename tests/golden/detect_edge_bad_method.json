@@ -1,6 +1,0 @@
-{
- "_message_verbatim": "method must be 'band_snr' or 'ratio95'",
- "exc_type": "ValueError",
- "message": "method must be 'band_snr' or 'ratio95'",
- "t": "exception"
-}

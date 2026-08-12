@@ -24,9 +24,15 @@ frozen copy of the original, which lives at
 Several functions were renamed. Every old name still works through a
 deprecation shim. See [RENAMES.md](RENAMES.md).
 
-Logical issues found along the way are reported in [FINDINGS.md](FINDINGS.md)
-and were deliberately not fixed. Two of them change what you should pass. Read
-entries 1, 2 and 5 before running anything unfamiliar.
+Twenty-two logical issues found along the way are reported in
+[FINDINGS.md](FINDINGS.md). Twenty were deliberately left unfixed and are pinned
+by goldens. Two were fixed, both in the PSD detection scan, because the defect
+was an error of understanding rather than a quirk worth preserving. That is the
+only place the package does not reproduce the original, and it touches one column
+of one table. See [the note on detection methods](#min_lambda_band-and-the-choice-of-method).
+
+Read FINDINGS entries 1 and 2 before running anything unfamiliar. Empty phi1 bins
+raise, and the numba velocity dispersion will not compile with `detrend=False`.
 
 ## Install and import
 
@@ -119,8 +125,8 @@ null = sa.compute_sampling_psd_realizations(
 )
 rms_obs, rms_null, excess_power, min_lambda_band = sa.detect_stream_psd_metrics(
     psd["freqs"], psd["psd"], w=dens["w"],
-    psd_all=null["psd_all"], nperseg=null["nperseg"], method="ratio95",
-)
+    psd_all=null["psd_all"], nperseg=null["nperseg"],
+)   # method="peak_snr", snr_threshold=5.0 by default
 ```
 
 `compute_bin_diagnostics` writes three columns onto `bins` in place and takes no
@@ -168,7 +174,7 @@ direction means more disturbed.
 
 | Code name | Paper name | Symbol | What it is | Units | Sign |
 |---|---|---|---|---|---|
-| `min_lambda_band` | Minimum detectable scale | `lambda_min` | Shortest along-stream wavelength at which the observed density power rises above the sampling noise floor. The finest structure the data can actually resolve. | degrees | lower means finer structure is detectable |
+| `min_lambda_band` | Minimum detectable scale | `lambda_min` | Shortest along-stream wavelength at which the observed density power rises above the sampling noise floor by 5 sigma. The finest structure the data can actually resolve. NaN when nothing clears. | degrees | lower means finer structure is detectable |
 | `rms_obs` | RMS density residual | `RMS_delta` | Square root of the observed power integrated across the trusted frequency band. The total amplitude of fractional density fluctuation. | dimensionless | higher is more structured |
 | `excess_power` | Excess power | `P_excess` | Integral across the trusted band of the observed power above the null median, clipped at zero. The part of the fluctuation that finite sampling does not explain. | dimensionless, power times frequency | higher is more disturbed |
 | `rms_null` | diagnostic only | | The same integral as `rms_obs`, taken on the Monte Carlo realizations and reduced by their median. The noise floor `rms_obs` should be read against. | dimensionless | reference level, not a measurement of the stream |
@@ -201,18 +207,38 @@ symbol is worse than leaving a gap.
 
 ### `min_lambda_band` and the choice of method
 
-`build_metrics_table` defaults to `method="ratio95"`, which is what produced the
-published values.
+Three methods, and they are three different statistics. `snr_threshold` means
+something different in each, which is why leaving it as None gives each its own
+default rather than a shared number.
 
-The other method, `"band_snr"`, is described in the `detect_stream_psd_metrics`
-docstring as preferred. It does not behave as one. Its scan records, for every
-contiguous frequency band clearing an SNR of 3, the wavelength at the band's
-**upper** edge, then reports the minimum. Any stream with real structure has some
-wide band reaching the top of the trusted range that clears the threshold
-easily, so the minimum is pinned there. Measured across all 16 fixture streams,
-`band_snr` returns exactly `1 / f_top_trusted` every time, a constant of the
-binning, while `ratio95` on the same streams spans 0.99 to 8.06 degrees. See
-[FINDINGS.md](FINDINGS.md) entry 5. `method="band_snr"` remains available.
+| `method` | Statistic | Default threshold | Notes |
+|---|---|---|---|
+| `peak_snr` | `(P_obs(f) - mu_null(f)) / sigma_null(f)`, per frequency | 5.0 | The default. A true signal-to-noise ratio in units of the null scatter, so 5 is the familiar 5-sigma. Reports `1/f` at the highest trusted frequency clearing it. |
+| `band_snr` | `I_obs / std(I_mc)`, integrated over a band of `min_bins` frequency bins | 3.0 | More conservative, since it needs coherent excess across adjacent bins, and noisier, since each integral covers only two points. |
+| `ratio95` | `P_obs(f) / P_null_95(f)`, per frequency | 3.0 | **Not an SNR**, despite the parameter name. A power ratio against the 95th percentile of the null. This is what produced the published values. |
+
+`build_metrics_table` defaults to `peak_snr` at 5 sigma. To reproduce the
+published table exactly:
+
+```python
+table = sa.build_metrics_table(
+    phi1, phi2, masks, lengths, widths, sigma_v, df_orbits,
+    method=sa.SPECTRA.published_method,             # "ratio95"
+    snr_threshold=sa.SPECTRA.published_snr_threshold,   # 3.0
+)
+```
+
+The published run used `ratio95` at 3 as a proxy for a 5-sigma detection.
+`peak_snr` at 5 reproduces it exactly on several streams and differs on others,
+because the null PSD distribution is chi-squared-like rather than Gaussian, so
+`P_95 / mu_null` is not a fixed multiple of `sigma_null / mu_null`.
+
+`band_snr` was corrected as part of this work. It used to record, for every
+qualifying band, the wavelength at the band's **upper** edge, then take the
+minimum. Any stream with real structure has a wide band reaching the top of the
+trusted range that clears easily, so the answer was pinned there for every
+stream. It now uses only the narrowest bands. See [FINDINGS.md](FINDINGS.md)
+entries 5 and 19, which also carry the per-stream numbers.
 
 ## Module map
 
@@ -246,26 +272,30 @@ sa.WASSERSTEIN_NULL_FIT.A     # 2.3, from the precomputed 95% null power law
 
 ```bash
 mamba activate aarora_py
-python -m pytest tests/ -q                 # 206 tests, about 90 seconds
+python -m pytest tests/ -q                 # 220 tests, about 100 seconds
 python -m pytest tests/ -q -m "not slow"   # skip the end-to-end pipeline cases
 ```
 
 The suite is a contract, not a set of unit tests. `tests/test_contract.py`
-parametrizes over 174 cases defined in `tools/cases.py`, runs each against the
+parametrizes over the cases defined in `tools/cases.py`, runs each against the
 package, and compares it bitwise against a golden generated from the frozen
 source before any code moved. Float scalars are compared through their exact
 hexadecimal representation, arrays with `numpy.testing.assert_array_equal`, and
 DataFrames column for column, dtype for dtype, index and all.
 
-Twenty-seven of those cases record a raised exception rather than a value. That
-is deliberate. Reproducing a failure is part of the contract, so a function that
+Twenty-six of those cases record a raised exception rather than a value. That is
+deliberate. Reproducing a failure is part of the contract, so a function that
 raises on an all-NaN column has to keep raising the same exception with the same
 message.
 
 `tests/test_pipeline.py` checks `build_metrics_table` against a re-implementation
 of the original `return_calc_props_df` in `tools/pipeline_ref.py`.
 `tests/test_compat.py` checks that no name that resolved before the refactor
-fails to resolve after it.
+fails to resolve after it. `tests/test_detection.py` covers the one place the
+package deliberately diverges, the PSD detection scan, which by definition has no
+golden. It pins the new behavior against explicit properties and against an
+independent re-derivation of each formula. The divergences are enumerated in
+`tools/cases.py` under `DIVERGENCES`.
 
 ### Regenerating the fixtures
 

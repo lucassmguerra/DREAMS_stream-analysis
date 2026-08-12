@@ -15,6 +15,14 @@ Three functions, run in order, each consuming the previous one's output.
    and returns the four scalars reported in the paper, the RMS density residual,
    the null RMS, the excess power, and the minimum detectable scale.
 
+Detection methods
+-----------------
+``peak_snr`` is the default. It is the only one of the three that computes an
+actual signal-to-noise ratio per frequency,
+``SNR(f) = (P_obs(f) - mu_null(f)) / sigma_null(f)``, and reports the shortest
+wavelength still clearing the threshold. It was added after the refactor. See the
+note in FINDINGS.md.
+
 Supports the power-spectrum family of *No Stream Left Unscathed* (Arora et al.).
 """
 from __future__ import annotations
@@ -31,6 +39,17 @@ __all__ = [
     "compute_sampling_psd_realizations",
     "detect_stream_psd_metrics",
 ]
+
+#: Detection threshold each method uses when `snr_threshold` is left as None.
+#: They differ because the three are different statistics. "peak_snr" is a true
+#: SNR in units of the null scatter, so 5 is the familiar 5-sigma. "band_snr" is
+#: an SNR on a band integral, and "ratio95" is a power ratio against the 95th
+#: percentile, for both of which 3 is the value the original hardcoded.
+_DEFAULT_SNR_THRESHOLD: dict[str, float] = {
+    "peak_snr": 5.0,
+    "band_snr": 3.0,
+    "ratio95": 3.0,
+}
 
 
 def compute_welch_psd(
@@ -369,10 +388,10 @@ def detect_stream_psd_metrics(
     psd_median: np.ndarray | None = None,
     psd_95: np.ndarray | None = None,
     nperseg: int | None = None,
-    snr_threshold: float = 3.0,
+    snr_threshold: float | None = None,
     min_bins: int = 2,
     conservative_nyquist_frac: float = 0.9,
-    method: str = "band_snr",  # "band_snr" (requires psd_all) or "ratio95" (uses psd_95)
+    method: str = "peak_snr",  # "peak_snr", "band_snr" (both need psd_all), or "ratio95"
     detailed: bool = False,
 ) -> tuple[float, float, float, float] | dict[str, Any]:
     """
@@ -397,15 +416,26 @@ def detect_stream_psd_metrics(
     nperseg : int or None
         If provided, used to set a conservative low-frequency limit: df_welch = fs / nperseg.
         If None, the function uses the observed Δf to set the low-frequency limit.
-    snr_threshold : float
-        Threshold on band SNR to claim detection (default 3.0).
+    snr_threshold : float or None
+        Detection threshold. When None, each method uses its own default, 5.0 for
+        "peak_snr" and 3.0 for "band_snr" and "ratio95". The three are not the
+        same statistic, so a single number does not mean the same thing across
+        them, which is why the default is per method.
     min_bins : int
         Minimum number of frequency bins in a scanned band (helps avoid single-bin noise).
+        Used by "band_snr" only.
     conservative_nyquist_frac : float
         Fraction of Nyquist to trust for the upper end of the scanned band (<=1.0).
-    method : {"band_snr","ratio95"}
-        "band_snr": compute band-integrated SNR using psd_all (preferred).
-        "ratio95": fallback per-frequency ratio test using psd_95 (conservative).
+    method : {"peak_snr","band_snr","ratio95"}
+        "peak_snr": per-frequency SNR, ``(P_obs - mu_null) / sigma_null``, reporting
+        the shortest wavelength in the trusted band that clears `snr_threshold`.
+        This is a true signal-to-noise ratio and is the default.
+        "band_snr": band-integrated SNR, ``I_obs / std(I_mc)``, over contiguous
+        bands of `min_bins` frequency bins. More conservative than "peak_snr"
+        because it needs coherent excess across several bins, and noisier because
+        each band integral is taken over only `min_bins` points.
+        "ratio95": per-frequency power ratio, ``P_obs / P_null_95``. Not an SNR
+        despite the parameter name. This is what produced the published values.
     detailed : bool
         If False (default) returns a tuple:
             (rms_obs, rms_null, excess_power, min_lambda_band)
@@ -453,13 +483,30 @@ def detect_stream_psd_metrics(
     - If psd_all is not provided and method == "band_snr", the function will fall back
       to "ratio95" if psd_95 is provided; otherwise it'll compute rms_null/excess from psd_median
       but cannot compute band SNR (so min_lambda_band will be None).
-    - The two methods answer different questions and give different numbers.
-      "band_snr" reports the smallest wavelength belonging to *any* band that
-      clears the SNR threshold, so it tends toward the top of the trusted band.
-      "ratio95" reports the wavelength of the highest-frequency bin that
-      individually exceeds the 95th percentile of the null. The published values
-      of *No Stream Left Unscathed* were produced with "ratio95".
+    - Per-frequency SNR, used by "peak_snr":
+        SNR(f) = ( P_obs(f) - mu_null(f) ) / sigma_null(f)
+      where mu_null is the median and sigma_null the sample standard deviation of
+      the Monte Carlo realizations at that frequency. `min_lambda_band` is
+      ``1 / f`` at the highest trusted frequency where this clears the threshold.
+    - The three methods answer different questions and give different numbers.
+      The published values of *No Stream Left Unscathed* were produced with
+      "ratio95" at a threshold of 3, which was used as a proxy for a 5-sigma
+      detection. "peak_snr" at 5 reproduces it exactly on several streams and
+      differs on others, because the null PSD distribution is chi-squared-like
+      rather than Gaussian, so ``P_95 / mu_null`` is not a fixed multiple of
+      ``sigma_null / mu_null``.
+    - "band_snr" reports the shortest wavelength among bands of exactly `min_bins`
+      frequency bins that clear the threshold. Before this was corrected it
+      reported the upper edge of *any* qualifying band and then minimized, which
+      pinned the answer to the top of the trusted range for every stream. See
+      FINDINGS.md.
     """
+    # -- resolve the per-method detection threshold --
+    if method not in _DEFAULT_SNR_THRESHOLD:
+        raise ValueError("method must be 'peak_snr', 'band_snr' or 'ratio95'")
+    if snr_threshold is None:
+        snr_threshold = _DEFAULT_SNR_THRESHOLD[method]
+
     # -- basic validation --
     freqs = np.asarray(freqs, dtype=float)
     psd_obs = np.asarray(psd_obs, dtype=float)
@@ -506,12 +553,12 @@ def detect_stream_psd_metrics(
                 raise ValueError(
                     "psd_all has a different number of frequency bins than freqs. Provide psd_all aligned with freqs."
                 )
-        # compute mu_null and psd_95 from psd_all_interp
+        # compute mu_null, sigma_null and psd_95 from psd_all_interp.
+        # null_std is the denominator of the per-frequency SNR used by
+        # method="peak_snr". It was computed and discarded in the original.
         mu_null = np.median(psd_all_interp, axis=0)
         null_std = np.std(psd_all_interp, axis=0, ddof=1)
         null_95 = np.percentile(psd_all_interp, 95.0, axis=0)
-        null_16 = np.percentile(psd_all_interp, 16.0, axis=0)
-        null_84 = np.percentile(psd_all_interp, 84.0, axis=0)
         null_95_interp = null_95.copy()
     else:
         # no psd_all: try to use psd_median / psd_95 if provided (assumed aligned to freqs)
@@ -572,6 +619,8 @@ def detect_stream_psd_metrics(
     # -- detection scan for bands --
     min_lambda_band = None
     bands_above: list[tuple] = []  # (i0,i1,SNR,p_emp,I_obs,lambda_min)
+    narrow_lambdas: list[float] = []  # lambda from qualifying min_bins-wide bands
+    snr_per_freq = None
     best_SNR = 0.0
 
     if method == "band_snr":
@@ -619,14 +668,53 @@ def detect_stream_psd_metrics(
                     f_high = freqs_band[-1]
                     lambda_min = float(1.0 / f_high) if f_high > 0 else None
                     bands_above.append((idxs[a], idxs[b], SNR, p_emp, I_obs, lambda_min))
+                    # Only the narrowest bands are used to set min_lambda_band.
+                    # A band spanning most of the trusted range always clears,
+                    # because its integral accumulates excess from everywhere, and
+                    # its upper edge is the top of the range. Minimizing over all
+                    # bands therefore returns the top of the range for every
+                    # stream. Restricting to bands of exactly min_bins frequency
+                    # bins keeps the test local, so a short wavelength is reported
+                    # only when there is excess at that wavelength.
+                    if (b - a + 1) == min_bins and lambda_min is not None:
+                        narrow_lambdas.append(lambda_min)
                 if SNR > best_SNR:
                     best_SNR = SNR
-        if len(bands_above) > 0:
-            # find smallest lambda across bands_above
-            lambda_vals = [b[-1] for b in bands_above if b[-1] is not None]
-            min_lambda_band = float(np.min(lambda_vals)) if len(lambda_vals) > 0 else None
+        min_lambda_band = float(np.min(narrow_lambdas)) if narrow_lambdas else None
+
+    elif method == "peak_snr":
+        # Per-frequency signal-to-noise ratio against the Monte Carlo floor.
+        #   SNR(f) = ( P_obs(f) - mu_null(f) ) / sigma_null(f)
+        # Report the shortest trusted wavelength that clears the threshold, which
+        # is the finest structure distinguishable from sampling noise.
+        if null_std is None:
+            # sigma_null needs the realizations themselves, not a summary.
+            if not detailed:
+                return (rms_obs, rms_null, excess_power, None)
+            return {
+                "rms_obs": rms_obs,
+                "rms_null": rms_null,
+                "excess_power": excess_power,
+                "min_lambda_band": None,
+                "trusted_mask": trusted_mask,
+                "warning": "No psd_all provided; cannot compute sigma_null for a "
+                "per-frequency SNR. Provide psd_all, or use method='ratio95' with psd_95.",
+            }
+        snr_per_freq = np.divide(
+            psd_obs - mu_null,
+            null_std,
+            out=np.zeros_like(psd_obs),
+            where=null_std > 0,
+        )
+        sel = (snr_per_freq >= snr_threshold) & trusted_mask
+        if np.any(sel):
+            # smallest lambda means the highest-frequency selected bin
+            highest_idx = int(np.max(np.where(sel)[0]))
+            f_at = float(freqs[highest_idx])
+            min_lambda_band = float(1.0 / f_at) if f_at > 0 else None
         else:
             min_lambda_band = None
+        best_SNR = float(np.max(snr_per_freq[trusted_mask])) if np.any(trusted_mask) else 0.0
 
     elif method == "ratio95":
         # conservative per-frequency test: P_obs / P_null_95 >= snr_threshold
@@ -656,8 +744,8 @@ def detect_stream_psd_metrics(
             min_lambda_band = float(1.0 / f_at) if f_at > 0 else None
         else:
             min_lambda_band = None
-    else:
-        raise ValueError("method must be 'band_snr' or 'ratio95'")
+    else:  # pragma: no cover - method is validated at the top of the function
+        raise ValueError("method must be 'peak_snr', 'band_snr' or 'ratio95'")
 
     if not detailed:
         return (rms_obs, rms_null, excess_power, min_lambda_band)
@@ -675,8 +763,11 @@ def detect_stream_psd_metrics(
         "snr_threshold": snr_threshold,
         "min_bins": min_bins,
     }
+    out["freqs"] = freqs  # the DC-stripped vector trusted_mask indexes
     out["psd_null_median"] = mu_null
     out["psd_null_95"] = null_95_interp
+    out["psd_null_std"] = null_std
+    out["snr_per_freq"] = snr_per_freq
     if psd_all_interp is not None:
         out["psd_all_interp"] = psd_all_interp
     out["bands_above_threshold"] = bands_above

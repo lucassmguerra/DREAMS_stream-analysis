@@ -82,15 +82,40 @@ def test_column_order_matches_declaration(api, inputs):
 
 
 @pytest.mark.slow
-def test_default_method_reproduces_the_paper(api, inputs, reference):
+def test_published_settings_reproduce_the_paper(api, inputs, reference):
     """
-    Called with no method at all, build_metrics_table matches the paper.
+    At the published settings, build_metrics_table matches return_calc_props_df.
 
-    The default is ratio95, which is what return_calc_props_df passed. See
-    FINDINGS.md entry 5 for why band_snr is not the default despite being the
-    preference stated in the detect_stream_psd_metrics docstring.
+    ratio95 at a threshold of 3 is what the original hardcoded. It is not the
+    default any more, so the settings have to be asked for.
     """
-    assert api.SPECTRA.pipeline_method == "ratio95"
+    assert api.SPECTRA.published_method == "ratio95"
+    assert api.SPECTRA.published_snr_threshold == 3.0
+    new = api.build_metrics_table(
+        inputs["Phi1"],
+        inputs["Phi2"],
+        inputs["masks"],
+        inputs["L"],
+        inputs["W"],
+        inputs["vel_std_tot"],
+        inputs["df_orbits"],
+        method=api.SPECTRA.published_method,
+        snr_threshold=api.SPECTRA.published_snr_threshold,
+    )
+    np.testing.assert_array_equal(
+        new["min_lambda_band"].to_numpy(), reference["min_lambda_band"].to_numpy()
+    )
+
+
+@pytest.mark.slow
+def test_default_is_peak_snr_at_five_sigma(api, inputs, reference):
+    """
+    Called with no method, the pipeline runs peak_snr at 5 sigma.
+
+    This is the one column where the new pipeline deliberately differs from the
+    published one. Everything else must still match.
+    """
+    assert api.SPECTRA.method == "peak_snr"
     new = api.build_metrics_table(
         inputs["Phi1"],
         inputs["Phi2"],
@@ -100,45 +125,29 @@ def test_default_method_reproduces_the_paper(api, inputs, reference):
         inputs["vel_std_tot"],
         inputs["df_orbits"],
     )
-    np.testing.assert_array_equal(
-        new["min_lambda_band"].to_numpy(), reference["min_lambda_band"].to_numpy()
+    explicit = api.build_metrics_table(
+        inputs["Phi1"],
+        inputs["Phi2"],
+        inputs["masks"],
+        inputs["L"],
+        inputs["W"],
+        inputs["vel_std_tot"],
+        inputs["df_orbits"],
+        method="peak_snr",
+        snr_threshold=5.0,
     )
-
-
-@pytest.mark.slow
-def test_band_snr_saturates_at_the_trusted_band_edge(api, fixtures):
-    """
-    Pin the defect that keeps band_snr out of the default. FINDINGS.md entry 5.
-
-    Its min_lambda_band is 1 / f_top_trusted for every stream, so the column
-    carries no per-stream information. If this test ever fails, the scan has
-    been changed and the default should be revisited.
-    """
-    for i in range(4):
-        phi1, _q, _L = fixtures.track("unperturb", i)
-        out = api.compute_linearized_density(
-            phi1, detrend="poly", smoothing_sigma=1, bin_width=0.25
+    for col in reference.columns:
+        np.testing.assert_array_equal(
+            new[col].to_numpy(), explicit[col].to_numpy(), err_msg=f"column {col}"
         )
-        psd = api.compute_welch_psd(out["resid"], out["w"])
-        res = api.compute_sampling_psd_realizations(
-            out["hist_counts"],
-            smoothing_sigma_bins=1,
-            w=out["w"],
-            n_realizations=1000,
-            rng_seed=12345,
-        )
-        detail = api.detect_stream_psd_metrics(
-            psd["freqs"],
-            psd["psd"],
-            w=out["w"],
-            psd_all=res["psd_all"],
-            method="band_snr",
-            nperseg=res["nperseg"],
-            detailed=True,
-        )
-        positive = psd["freqs"][psd["freqs"] > 0]
-        f_top_trusted = positive[detail["trusted_mask"]].max()
-        assert detail["min_lambda_band"] == pytest.approx(1.0 / f_top_trusted, rel=1e-12)
+        if col != "min_lambda_band":
+            np.testing.assert_array_equal(
+                new[col].to_numpy(), reference[col].to_numpy(), err_msg=f"column {col}"
+            )
+
+    detected = new["min_lambda_band"].dropna()
+    assert len(detected) > 0
+    assert detected.nunique() > 1, "min_lambda_band should vary between streams"
 
 
 @pytest.mark.slow
@@ -258,12 +267,13 @@ def test_no_checkpoint_by_default(api, inputs, tmp_path, monkeypatch):
 
 
 @pytest.mark.slow
-def test_band_snr_changes_only_min_lambda(api, inputs, reference):
+@pytest.mark.parametrize("method", ["peak_snr", "band_snr"])
+def test_method_changes_only_min_lambda(api, inputs, reference, method):
     """
-    The two detection methods differ in exactly one column.
+    Changing the detection method touches exactly one column.
 
     rms_obs, rms_null and excess_power come from the same trusted-band integrals
-    either way. Only min_lambda_band depends on the detection scan.
+    whatever the method. Only min_lambda_band depends on the detection scan.
     """
     new = api.build_metrics_table(
         inputs["Phi1"],
@@ -273,7 +283,7 @@ def test_band_snr_changes_only_min_lambda(api, inputs, reference):
         inputs["W"],
         inputs["vel_std_tot"],
         inputs["df_orbits"],
-        method="band_snr",
+        method=method,
     )
     for col in reference.columns:
         if col == "min_lambda_band":
@@ -281,9 +291,6 @@ def test_band_snr_changes_only_min_lambda(api, inputs, reference):
         np.testing.assert_array_equal(
             new[col].to_numpy(), reference[col].to_numpy(), err_msg=f"column {col}"
         )
-    assert not np.allclose(
-        new["min_lambda_band"].to_numpy(), reference["min_lambda_band"].to_numpy()
-    ), "band_snr and ratio95 gave the same min_lambda_band, which is unexpected"
 
 
 @pytest.mark.slow

@@ -200,25 +200,24 @@ class SpectraConfig:
         the noise floor a pure sampling floor rather than a floor that already
         contains the observed structure.
     snr_threshold : float
-        Band-integrated SNR required to claim a detection.
+        Detection threshold for "peak_snr", in units of the null scatter. The
+        familiar 5-sigma.
     min_bins : int
         Minimum number of frequency bins in a scanned band.
     conservative_nyquist_frac : float
         Fraction of the Nyquist frequency trusted at the top of the band.
     method : str
-        Detection method of ``detect_stream_psd_metrics`` itself. "band_snr", the
-        value hardcoded in that function's signature.
-    pipeline_method : str
-        Detection method used by ``build_metrics_table``. "ratio95", the value
-        the published pipeline passed at the call site.
-
-        The two differ, and that difference is the one genuine ambiguity in the
-        original contract. "band_snr" is described in the function's own
-        docstring as preferred, but as written its ``min_lambda_band`` is always
-        ``1 / f_top_trusted``, the shortest wavelength the binning can represent,
-        so it reports where the trusted band ends rather than where the signal
-        does. "ratio95" reproduces the published values. See FINDINGS.md entry 5
-        and the metric reference table in README.md.
+        Detection method. "peak_snr", the per-frequency signal-to-noise ratio
+        ``(P_obs - mu_null) / sigma_null``. This is the default everywhere,
+        including in ``build_metrics_table``.
+    published_method : str
+        The method that produced the values in *No Stream Left Unscathed*,
+        "ratio95", with ``published_snr_threshold``. It is a power ratio against
+        the 95th percentile of the null rather than an SNR, and was used as a
+        proxy for a 5-sigma detection. Pass ``method="ratio95",
+        snr_threshold=3.0`` to reproduce the published table.
+    published_snr_threshold : float
+        Threshold that went with "ratio95" in the published run.
     """
 
     n_realizations: int = 1000
@@ -231,11 +230,12 @@ class SpectraConfig:
     poly_order: int = 3
     sampling: str = "multinomial"
     null_hypothesis: bool = True
-    snr_threshold: float = 3.0
+    snr_threshold: float = 5.0
     min_bins: int = 2
     conservative_nyquist_frac: float = 0.9
-    method: str = "band_snr"
-    pipeline_method: str = "ratio95"
+    method: str = "peak_snr"
+    published_method: str = "ratio95"
+    published_snr_threshold: float = 3.0
 
 
 @dataclass(frozen=True)
