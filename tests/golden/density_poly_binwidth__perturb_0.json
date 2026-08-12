@@ -1,0 +1,72 @@
+{
+ "items": {
+  "centers": {
+   "dtype": "float64",
+   "k": "density_poly_binwidth__perturb_0.centers",
+   "shape": [
+    73
+   ],
+   "t": "array"
+  },
+  "density": {
+   "dtype": "float64",
+   "k": "density_poly_binwidth__perturb_0.density",
+   "shape": [
+    73
+   ],
+   "t": "array"
+  },
+  "hist_counts": {
+   "dtype": "float64",
+   "k": "density_poly_binwidth__perturb_0.hist_counts",
+   "shape": [
+    73
+   ],
+   "t": "array"
+  },
+  "max": {
+   "t": "float",
+   "v": "0x1.16f425981561dp+3"
+  },
+  "min": {
+   "t": "float",
+   "v": "-0x1.2b5712e17b374p+3"
+  },
+  "nbins": {
+   "t": "int",
+   "v": 73
+  },
+  "pdf": {
+   "t": "none"
+  },
+  "resid": {
+   "dtype": "float64",
+   "k": "density_poly_binwidth__perturb_0.resid",
+   "shape": [
+    73
+   ],
+   "t": "array"
+  },
+  "smooth_counts": {
+   "dtype": "float64",
+   "k": "density_poly_binwidth__perturb_0.smooth_counts",
+   "shape": [
+    73
+   ],
+   "t": "array"
+  },
+  "trend": {
+   "dtype": "float64",
+   "k": "density_poly_binwidth__perturb_0.trend",
+   "shape": [
+    73
+   ],
+   "t": "array"
+  },
+  "w": {
+   "t": "float",
+   "v": "0x1.faff5112e7f9ep-3"
+  }
+ },
+ "t": "dict"
+}

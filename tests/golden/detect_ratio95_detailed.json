@@ -1,0 +1,82 @@
+{
+ "items": {
+  "bands_above_threshold": {
+   "items": [],
+   "t": "list"
+  },
+  "best_SNR": {
+   "t": "float",
+   "v": "0x0.0p+0"
+  },
+  "excess_power": {
+   "t": "float",
+   "v": "0x1.51aa2623ccb44p-5"
+  },
+  "f_max_trust": {
+   "t": "float",
+   "v": "0x1.ccf2a18260a30p+0"
+  },
+  "f_min_trust": {
+   "t": "float",
+   "v": "0x1.fc31a57ec32f0p-6"
+  },
+  "method": {
+   "t": "str",
+   "v": "ratio95"
+  },
+  "min_bins": {
+   "t": "int",
+   "v": 2
+  },
+  "min_lambda_band": {
+   "t": "float",
+   "v": "0x1.01ead34f5d6cep+3"
+  },
+  "psd_all_interp": {
+   "dtype": "float64",
+   "k": "detect_ratio95_detailed.psd_all_interp",
+   "shape": [
+    200,
+    64
+   ],
+   "t": "array"
+  },
+  "psd_null_95": {
+   "dtype": "float64",
+   "k": "detect_ratio95_detailed.psd_null_95",
+   "shape": [
+    64
+   ],
+   "t": "array"
+  },
+  "psd_null_median": {
+   "dtype": "float64",
+   "k": "detect_ratio95_detailed.psd_null_median",
+   "shape": [
+    64
+   ],
+   "t": "array"
+  },
+  "rms_null": {
+   "t": "float",
+   "v": "0x1.ed63aa91eb96bp-4"
+  },
+  "rms_obs": {
+   "t": "float",
+   "v": "0x1.de500ffe4aa7dp-3"
+  },
+  "snr_threshold": {
+   "t": "float",
+   "v": "0x1.8000000000000p+1"
+  },
+  "trusted_mask": {
+   "dtype": "bool",
+   "k": "detect_ratio95_detailed.trusted_mask",
+   "shape": [
+    64
+   ],
+   "t": "array"
+  }
+ },
+ "t": "dict"
+}

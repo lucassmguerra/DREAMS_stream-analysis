@@ -1,0 +1,21 @@
+{
+ "items": [
+  {
+   "t": "float",
+   "v": "0x1.f7b2253818f4dp-4"
+  },
+  {
+   "t": "float",
+   "v": "0x1.3bb5e4393b987p-5"
+  },
+  {
+   "t": "float",
+   "v": "0x1.c06bcd28c7ed7p-7"
+  },
+  {
+   "t": "float",
+   "v": "0x1.2ed08cc0f75dbp+0"
+  }
+ ],
+ "t": "tuple"
+}

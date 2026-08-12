@@ -1,0 +1,13 @@
+{
+ "items": [
+  {
+   "t": "bool",
+   "v": false
+  },
+  {
+   "t": "float",
+   "v": "nan"
+  }
+ ],
+ "t": "tuple"
+}

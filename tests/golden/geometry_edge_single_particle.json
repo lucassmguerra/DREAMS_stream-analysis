@@ -1,0 +1,21 @@
+{
+ "items": [
+  {
+   "t": "float",
+   "v": "0x0.0p+0"
+  },
+  {
+   "t": "float",
+   "v": "0x0.0p+0"
+  },
+  {
+   "dtype": "bool",
+   "k": "geometry_edge_single_particle.2",
+   "shape": [
+    1
+   ],
+   "t": "array"
+  }
+ ],
+ "t": "tuple"
+}

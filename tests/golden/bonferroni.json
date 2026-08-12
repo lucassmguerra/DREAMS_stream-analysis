@@ -1,0 +1,13 @@
+{
+ "items": [
+  {
+   "t": "bool",
+   "v": true
+  },
+  {
+   "t": "float",
+   "v": "0x1.0624dd2f1a9fcp-10"
+  }
+ ],
+ "t": "tuple"
+}

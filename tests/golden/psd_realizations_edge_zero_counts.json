@@ -1,0 +1,6 @@
+{
+ "_message_verbatim": "Total count Ntotal must be > 0 for multinomial sampling.",
+ "exc_type": "ValueError",
+ "message": "Total count Ntotal must be > 0 for multinomial sampling.",
+ "t": "exception"
+}

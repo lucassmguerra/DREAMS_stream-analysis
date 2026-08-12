@@ -1,0 +1,21 @@
+{
+ "items": [
+  {
+   "t": "float",
+   "v": "0x1.2b663b93c7f12p+5"
+  },
+  {
+   "t": "float",
+   "v": "0x1.843c2f54a0f5fp-2"
+  },
+  {
+   "dtype": "bool",
+   "k": "geometry_kde_single_stream.2",
+   "shape": [
+    10000
+   ],
+   "t": "array"
+  }
+ ],
+ "t": "tuple"
+}

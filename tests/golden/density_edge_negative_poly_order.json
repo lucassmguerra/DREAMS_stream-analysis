@@ -1,0 +1,6 @@
+{
+ "_message_verbatim": "poly_order must be >= 0 for poly detrend",
+ "exc_type": "ValueError",
+ "message": "poly_order must be >= 0 for poly detrend",
+ "t": "exception"
+}

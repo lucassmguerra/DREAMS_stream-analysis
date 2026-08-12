@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "stream-analysis"
+version = "1.0.0"
+description = "Disturbance metrics for N-body globular-cluster streams"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "Arpit Arora", email = "arora125@uw.edu" }]
+keywords = ["astronomy", "galactic dynamics", "stellar streams", "n-body"]
+classifiers = [
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Astronomy",
+]
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "pandas>=2.0",
+    "matplotlib>=3.6",
+]
+
+[project.optional-dependencies]
+numba = ["numba>=0.57"]
+test = ["pytest>=7.0", "pyarrow>=12.0"]
+
+[project.urls]
+Homepage = "https://github.com/arpit-arora/stream-analysis"
+
+[tool.setuptools.packages.find]
+include = ["stream_analysis*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["slow: end-to-end pipeline cases"]
+filterwarnings = ["ignore::RuntimeWarning"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"

@@ -1,0 +1,21 @@
+{
+ "items": [
+  {
+   "t": "float",
+   "v": "nan"
+  },
+  {
+   "t": "float",
+   "v": "0x0.0p+0"
+  },
+  {
+   "dtype": "bool",
+   "k": "geometry_edge_all_nan.2",
+   "shape": [
+    500
+   ],
+   "t": "array"
+  }
+ ],
+ "t": "tuple"
+}

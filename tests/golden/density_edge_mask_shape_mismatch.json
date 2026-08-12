@@ -1,0 +1,6 @@
+{
+ "_message_verbatim": "mask must have same shape as phi1",
+ "exc_type": "ValueError",
+ "message": "mask must have same shape as phi1",
+ "t": "exception"
+}

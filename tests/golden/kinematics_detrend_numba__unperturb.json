@@ -1,0 +1,8 @@
+{
+ "dtype": "float64",
+ "k": "kinematics_detrend_numba__unperturb",
+ "shape": [
+  16
+ ],
+ "t": "array"
+}

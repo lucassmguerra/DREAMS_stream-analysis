@@ -1,0 +1,6 @@
+{
+ "_message_verbatim": "scheme must be 'bin_size' or 'equal_count'",
+ "exc_type": "ValueError",
+ "message": "scheme must be 'bin_size' or 'equal_count'",
+ "t": "exception"
+}

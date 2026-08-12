@@ -1,0 +1,6 @@
+{
+ "_message_verbatim": "hist_counts must have at least 2 bins.",
+ "exc_type": "ValueError",
+ "message": "hist_counts must have at least 2 bins.",
+ "t": "exception"
+}

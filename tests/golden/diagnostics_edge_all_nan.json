@@ -1,0 +1,33 @@
+{
+ "items": [
+  {
+   "t": "float",
+   "v": "nan"
+  },
+  {
+   "t": "float",
+   "v": "nan"
+  },
+  {
+   "t": "float",
+   "v": "0x0.0p+0"
+  },
+  {
+   "t": "float",
+   "v": "0x0.0p+0"
+  },
+  {
+   "t": "float",
+   "v": "nan"
+  },
+  {
+   "t": "float",
+   "v": "nan"
+  },
+  {
+   "t": "float",
+   "v": "nan"
+  }
+ ],
+ "t": "tuple"
+}

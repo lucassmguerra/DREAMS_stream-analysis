@@ -1,0 +1,32 @@
+{
+ "items": {
+  "excess_power": {
+   "t": "float",
+   "v": "0x1.90a128b4d06e2p-1"
+  },
+  "min_lambda_band": {
+   "t": "none"
+  },
+  "rms_null": {
+   "t": "float",
+   "v": "0x0.0p+0"
+  },
+  "rms_obs": {
+   "t": "float",
+   "v": "0x1.c4e7812650955p-1"
+  },
+  "trusted_mask": {
+   "dtype": "bool",
+   "k": "detect_edge_no_mc_input_detailed.trusted_mask",
+   "shape": [
+    32
+   ],
+   "t": "array"
+  },
+  "warning": {
+   "t": "str",
+   "v": "No psd_all provided; cannot compute band-integrated SNR. Provide psd_all or use method='ratio95' with psd_95."
+  }
+ },
+ "t": "dict"
+}

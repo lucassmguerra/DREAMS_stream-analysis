@@ -1,0 +1,6 @@
+{
+ "_message_verbatim": "freqs and psd_obs must have same length.",
+ "exc_type": "ValueError",
+ "message": "freqs and psd_obs must have same length.",
+ "t": "exception"
+}

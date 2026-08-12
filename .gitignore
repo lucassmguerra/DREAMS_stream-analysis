@@ -1,0 +1,25 @@
+# Raw simulation data. Never commit, never push.
+data/*.hdf5
+data/
+
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Parquet outputs outside the test fixtures
+*.parquet
+!tests/fixtures/*.parquet
+
+# Derived stream-coordinate fixtures, 19 MB total, over the commit threshold.
+# Regenerate with: PYTHONPATH=~/py_scripts python tools/build_fixtures.py
+tests/fixtures/*.npz
+
+# Editable install / build artifacts
+*.egg-info/
+build/
+dist/
+.venv/
+
+# The private refactor brief. Internal paths and workflow notes, not a deliverable.
+CLAUDE.md

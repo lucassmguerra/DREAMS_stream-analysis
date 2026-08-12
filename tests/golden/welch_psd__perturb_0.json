@@ -1,0 +1,51 @@
+{
+ "items": {
+  "freqs": {
+   "dtype": "float64",
+   "k": "welch_psd__perturb_0.freqs",
+   "shape": [
+    10
+   ],
+   "t": "array"
+  },
+  "freqs_list": {
+   "items": [
+    {
+     "dtype": "float64",
+     "k": "welch_psd__perturb_0.freqs_list.0",
+     "shape": [
+      10
+     ],
+     "t": "array"
+    }
+   ],
+   "t": "list"
+  },
+  "psd": {
+   "dtype": "float64",
+   "k": "welch_psd__perturb_0.psd",
+   "shape": [
+    10
+   ],
+   "t": "array"
+  },
+  "psd_list": {
+   "items": [
+    {
+     "dtype": "float64",
+     "k": "welch_psd__perturb_0.psd_list.0",
+     "shape": [
+      10
+     ],
+     "t": "array"
+    }
+   ],
+   "t": "list"
+  },
+  "rms_total": {
+   "t": "float",
+   "v": "0x1.371854513bfe3p-3"
+  }
+ },
+ "t": "dict"
+}

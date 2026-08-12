@@ -1,0 +1,6 @@
+{
+ "_message_verbatim": "cannot access local variable '_' where it is not associated with a value",
+ "exc_type": "UnboundLocalError",
+ "message": "cannot access local variable '_' where it is not associated with a value",
+ "t": "exception"
+}

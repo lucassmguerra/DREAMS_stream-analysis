@@ -1,0 +1,103 @@
+{
+ "items": {
+  "centers": {
+   "dtype": "float64",
+   "k": "density_multistream.centers",
+   "shape": [
+    16,
+    875
+   ],
+   "t": "array"
+  },
+  "density": {
+   "dtype": "float64",
+   "k": "density_multistream.density",
+   "shape": [
+    16,
+    875
+   ],
+   "t": "array"
+  },
+  "hist_counts": {
+   "dtype": "float64",
+   "k": "density_multistream.hist_counts",
+   "shape": [
+    16,
+    875
+   ],
+   "t": "array"
+  },
+  "mask": {
+   "dtype": "bool",
+   "k": "density_multistream.mask",
+   "shape": [
+    16,
+    10000
+   ],
+   "t": "array"
+  },
+  "max": {
+   "dtype": "float64",
+   "k": "density_multistream.max",
+   "shape": [
+    16
+   ],
+   "t": "array"
+  },
+  "min": {
+   "dtype": "float64",
+   "k": "density_multistream.min",
+   "shape": [
+    16
+   ],
+   "t": "array"
+  },
+  "nbins": {
+   "dtype": "int64",
+   "k": "density_multistream.nbins",
+   "shape": [
+    16
+   ],
+   "t": "array"
+  },
+  "pdf": {
+   "t": "none"
+  },
+  "resid": {
+   "dtype": "float64",
+   "k": "density_multistream.resid",
+   "shape": [
+    16,
+    875
+   ],
+   "t": "array"
+  },
+  "smooth_counts": {
+   "dtype": "float64",
+   "k": "density_multistream.smooth_counts",
+   "shape": [
+    16,
+    875
+   ],
+   "t": "array"
+  },
+  "trend": {
+   "dtype": "float64",
+   "k": "density_multistream.trend",
+   "shape": [
+    16,
+    875
+   ],
+   "t": "array"
+  },
+  "w": {
+   "dtype": "float64",
+   "k": "density_multistream.w",
+   "shape": [
+    16
+   ],
+   "t": "array"
+  }
+ },
+ "t": "dict"
+}

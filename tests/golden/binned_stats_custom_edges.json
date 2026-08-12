@@ -1,0 +1,108 @@
+{
+ "cols": {
+  "bin_left": {
+   "dtype": "float64",
+   "k": "binned_stats_custom_edges.col.bin_left",
+   "shape": [
+    12
+   ],
+   "t": "array"
+  },
+  "bin_right": {
+   "dtype": "float64",
+   "k": "binned_stats_custom_edges.col.bin_right",
+   "shape": [
+    12
+   ],
+   "t": "array"
+  },
+  "count": {
+   "dtype": "int64",
+   "k": "binned_stats_custom_edges.col.count",
+   "shape": [
+    12
+   ],
+   "t": "array"
+  },
+  "ks_p_vs_norm": {
+   "dtype": "float64",
+   "k": "binned_stats_custom_edges.col.ks_p_vs_norm",
+   "shape": [
+    12
+   ],
+   "t": "array"
+  },
+  "ks_stat_vs_norm": {
+   "dtype": "float64",
+   "k": "binned_stats_custom_edges.col.ks_stat_vs_norm",
+   "shape": [
+    12
+   ],
+   "t": "array"
+  },
+  "mean_phi2": {
+   "dtype": "float64",
+   "k": "binned_stats_custom_edges.col.mean_phi2",
+   "shape": [
+    12
+   ],
+   "t": "array"
+  },
+  "std_phi2": {
+   "dtype": "float64",
+   "k": "binned_stats_custom_edges.col.std_phi2",
+   "shape": [
+    12
+   ],
+   "t": "array"
+  },
+  "wass_vs_global": {
+   "dtype": "float64",
+   "k": "binned_stats_custom_edges.col.wass_vs_global",
+   "shape": [
+    12
+   ],
+   "t": "array"
+  },
+  "wass_vs_norm": {
+   "dtype": "float64",
+   "k": "binned_stats_custom_edges.col.wass_vs_norm",
+   "shape": [
+    12
+   ],
+   "t": "array"
+  }
+ },
+ "columns": [
+  "count",
+  "mean_phi2",
+  "std_phi2",
+  "ks_stat_vs_norm",
+  "ks_p_vs_norm",
+  "wass_vs_norm",
+  "wass_vs_global",
+  "bin_left",
+  "bin_right"
+ ],
+ "dtypes": [
+  "int64",
+  "float64",
+  "float64",
+  "float64",
+  "float64",
+  "float64",
+  "float64",
+  "category",
+  "category"
+ ],
+ "index": {
+  "dtype": "int64",
+  "k": "binned_stats_custom_edges.index",
+  "shape": [
+   12
+  ],
+  "t": "array"
+ },
+ "index_name": null,
+ "t": "frame"
+}

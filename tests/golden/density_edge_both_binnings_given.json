@@ -1,0 +1,6 @@
+{
+ "_message_verbatim": "Cannot provide both 'nbins' and 'bin_width'; choose one",
+ "exc_type": "ValueError",
+ "message": "Cannot provide both 'nbins' and 'bin_width'; choose one",
+ "t": "exception"
+}

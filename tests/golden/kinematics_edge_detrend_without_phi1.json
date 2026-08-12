@@ -1,0 +1,6 @@
+{
+ "_message_verbatim": "phi1 must be provided when detrend=True.",
+ "exc_type": "ValueError",
+ "message": "phi1 must be provided when detrend=True.",
+ "t": "exception"
+}

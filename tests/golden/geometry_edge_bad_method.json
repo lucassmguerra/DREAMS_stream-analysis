@@ -1,0 +1,6 @@
+{
+ "_message_verbatim": "method must be 'quantile' or 'kde'",
+ "exc_type": "ValueError",
+ "message": "method must be 'quantile' or 'kde'",
+ "t": "exception"
+}

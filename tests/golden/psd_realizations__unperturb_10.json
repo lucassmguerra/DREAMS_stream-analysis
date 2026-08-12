@@ -1,0 +1,78 @@
+{
+ "items": {
+  "freqs": {
+   "dtype": "float64",
+   "k": "psd_realizations__unperturb_10.freqs",
+   "shape": [
+    110
+   ],
+   "t": "array"
+  },
+  "noverlap": {
+   "t": "int",
+   "v": 109
+  },
+  "nperseg": {
+   "t": "int",
+   "v": 218
+  },
+  "psd_16": {
+   "dtype": "float64",
+   "k": "psd_realizations__unperturb_10.psd_16",
+   "shape": [
+    110
+   ],
+   "t": "array"
+  },
+  "psd_84": {
+   "dtype": "float64",
+   "k": "psd_realizations__unperturb_10.psd_84",
+   "shape": [
+    110
+   ],
+   "t": "array"
+  },
+  "psd_95": {
+   "dtype": "float64",
+   "k": "psd_realizations__unperturb_10.psd_95",
+   "shape": [
+    110
+   ],
+   "t": "array"
+  },
+  "psd_all": {
+   "dtype": "float64",
+   "k": "psd_realizations__unperturb_10.psd_all",
+   "shape": [
+    1000,
+    110
+   ],
+   "t": "array"
+  },
+  "psd_mean": {
+   "dtype": "float64",
+   "k": "psd_realizations__unperturb_10.psd_mean",
+   "shape": [
+    110
+   ],
+   "t": "array"
+  },
+  "psd_median": {
+   "dtype": "float64",
+   "k": "psd_realizations__unperturb_10.psd_median",
+   "shape": [
+    110
+   ],
+   "t": "array"
+  },
+  "psd_std": {
+   "dtype": "float64",
+   "k": "psd_realizations__unperturb_10.psd_std",
+   "shape": [
+    110
+   ],
+   "t": "array"
+  }
+ },
+ "t": "dict"
+}

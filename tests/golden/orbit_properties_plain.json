@@ -1,0 +1,88 @@
+{
+ "cols": {
+  "eccentricity_geo": {
+   "dtype": "float64",
+   "k": "orbit_properties_plain.col.eccentricity_geo",
+   "shape": [
+    4
+   ],
+   "t": "array"
+  },
+  "eccentricity_osculating": {
+   "dtype": "float64",
+   "k": "orbit_properties_plain.col.eccentricity_osculating",
+   "shape": [
+    4
+   ],
+   "t": "array"
+  },
+  "max_apocenter_dist": {
+   "dtype": "float64",
+   "k": "orbit_properties_plain.col.max_apocenter_dist",
+   "shape": [
+    4
+   ],
+   "t": "array"
+  },
+  "mean_dist": {
+   "dtype": "float64",
+   "k": "orbit_properties_plain.col.mean_dist",
+   "shape": [
+    4
+   ],
+   "t": "array"
+  },
+  "min_pericenter_dist": {
+   "dtype": "float64",
+   "k": "orbit_properties_plain.col.min_pericenter_dist",
+   "shape": [
+    4
+   ],
+   "t": "array"
+  },
+  "n_pericenters": {
+   "dtype": "int64",
+   "k": "orbit_properties_plain.col.n_pericenters",
+   "shape": [
+    4
+   ],
+   "t": "array"
+  },
+  "period": {
+   "dtype": "float64",
+   "k": "orbit_properties_plain.col.period",
+   "shape": [
+    4
+   ],
+   "t": "array"
+  }
+ },
+ "columns": [
+  "min_pericenter_dist",
+  "max_apocenter_dist",
+  "mean_dist",
+  "n_pericenters",
+  "period",
+  "eccentricity_geo",
+  "eccentricity_osculating"
+ ],
+ "dtypes": [
+  "float64",
+  "float64",
+  "float64",
+  "int64",
+  "float64",
+  "float64",
+  "float64"
+ ],
+ "index": {
+  "dtype": "int64",
+  "k": "orbit_properties_plain.index",
+  "shape": [
+   4
+  ],
+  "t": "array"
+ },
+ "index_name": null,
+ "t": "frame"
+}

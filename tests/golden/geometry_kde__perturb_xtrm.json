@@ -1,0 +1,30 @@
+{
+ "items": [
+  {
+   "dtype": "float64",
+   "k": "geometry_kde__perturb_xtrm.0",
+   "shape": [
+    16
+   ],
+   "t": "array"
+  },
+  {
+   "dtype": "float64",
+   "k": "geometry_kde__perturb_xtrm.1",
+   "shape": [
+    16
+   ],
+   "t": "array"
+  },
+  {
+   "dtype": "bool",
+   "k": "geometry_kde__perturb_xtrm.2",
+   "shape": [
+    16,
+    10000
+   ],
+   "t": "array"
+  }
+ ],
+ "t": "tuple"
+}

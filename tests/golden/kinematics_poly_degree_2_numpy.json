@@ -1,0 +1,8 @@
+{
+ "dtype": "float64",
+ "k": "kinematics_poly_degree_2_numpy",
+ "shape": [
+  16
+ ],
+ "t": "array"
+}

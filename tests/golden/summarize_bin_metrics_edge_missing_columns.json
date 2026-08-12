@@ -1,0 +1,162 @@
+{
+ "items": [
+  {
+   "items": {
+    "bonferroni_flag": {
+     "t": "bool",
+     "v": false
+    },
+    "bonferroni_min_p": {
+     "t": "float",
+     "v": "nan"
+    },
+    "fisher_p": {
+     "t": "float",
+     "v": "nan"
+    },
+    "fisher_stat": {
+     "t": "float",
+     "v": "nan"
+    },
+    "frac_flag_wass_vs_95": {
+     "t": "float",
+     "v": "0x0.0p+0"
+    },
+    "frac_p_gt_0_05": {
+     "t": "float",
+     "v": "nan"
+    },
+    "max_wasserstein": {
+     "t": "float",
+     "v": "nan"
+    },
+    "max_wasserstein_global": {
+     "t": "float",
+     "v": "nan"
+    },
+    "median_ks_stat": {
+     "t": "float",
+     "v": "nan"
+    },
+    "median_wasserstein": {
+     "t": "float",
+     "v": "nan"
+    },
+    "median_wasserstein_global": {
+     "t": "float",
+     "v": "nan"
+    }
+   },
+   "t": "dict"
+  },
+  {
+   "cols": {
+    "count": {
+     "dtype": "float64",
+     "k": "summarize_bin_metrics_edge_missing_columns.1.col.count",
+     "shape": [
+      2
+     ],
+     "t": "array"
+    },
+    "flag_wass_under_95": {
+     "dtype": "bool",
+     "k": "summarize_bin_metrics_edge_missing_columns.1.col.flag_wass_under_95",
+     "shape": [
+      2
+     ],
+     "t": "array"
+    },
+    "ks_p_vs_norm": {
+     "dtype": "float64",
+     "k": "summarize_bin_metrics_edge_missing_columns.1.col.ks_p_vs_norm",
+     "shape": [
+      2
+     ],
+     "t": "array"
+    },
+    "ks_stat_vs_norm": {
+     "dtype": "float64",
+     "k": "summarize_bin_metrics_edge_missing_columns.1.col.ks_stat_vs_norm",
+     "shape": [
+      2
+     ],
+     "t": "array"
+    },
+    "norm_wass_to_95": {
+     "dtype": "float64",
+     "k": "summarize_bin_metrics_edge_missing_columns.1.col.norm_wass_to_95",
+     "shape": [
+      2
+     ],
+     "t": "array"
+    },
+    "unrelated": {
+     "dtype": "float64",
+     "k": "summarize_bin_metrics_edge_missing_columns.1.col.unrelated",
+     "shape": [
+      2
+     ],
+     "t": "array"
+    },
+    "wass_thresh_95": {
+     "dtype": "float64",
+     "k": "summarize_bin_metrics_edge_missing_columns.1.col.wass_thresh_95",
+     "shape": [
+      2
+     ],
+     "t": "array"
+    },
+    "wass_vs_global": {
+     "dtype": "float64",
+     "k": "summarize_bin_metrics_edge_missing_columns.1.col.wass_vs_global",
+     "shape": [
+      2
+     ],
+     "t": "array"
+    },
+    "wass_vs_norm": {
+     "dtype": "float64",
+     "k": "summarize_bin_metrics_edge_missing_columns.1.col.wass_vs_norm",
+     "shape": [
+      2
+     ],
+     "t": "array"
+    }
+   },
+   "columns": [
+    "unrelated",
+    "wass_vs_norm",
+    "ks_p_vs_norm",
+    "ks_stat_vs_norm",
+    "count",
+    "wass_vs_global",
+    "wass_thresh_95",
+    "norm_wass_to_95",
+    "flag_wass_under_95"
+   ],
+   "dtypes": [
+    "float64",
+    "float64",
+    "float64",
+    "float64",
+    "float64",
+    "float64",
+    "float64",
+    "float64",
+    "bool"
+   ],
+   "index": {
+    "dtype": "int64",
+    "k": "summarize_bin_metrics_edge_missing_columns.1.index",
+    "shape": [
+     2
+    ],
+    "t": "array"
+   },
+   "index_name": null,
+   "t": "frame"
+  }
+ ],
+ "t": "tuple"
+}
