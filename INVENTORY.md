@@ -77,16 +77,22 @@ The pipeline driver `return_calc_props_df` lives outside this file, in
 
 ## 3. Dead-code candidates
 
-Defined here and called nowhere, neither in this file nor in any `.py` or `.ipynb`
-under `/mnt/d/Research/GC_streams/`.
+None.
 
-| Function | Note |
-|---|---|
-| `compute_orbit_properties` | The orbit table consumed by the pipeline is read from a parquet file produced elsewhere, so this function is not on the paper's critical path. It is nonetheless a complete, documented, public-looking API. Recommend keeping it public rather than quarantining. |
+`compute_orbit_properties` was listed here in the first pass, because no `sa.`
+call site for it appears in any `.py` or `.ipynb` under
+`/mnt/d/Research/GC_streams/`. Corrected after Arpit pointed it out. It builds
+the `df_orbits` table that the pipeline consumes, in the orbit-integration step
+upstream of that directory, so the parquet the pipeline reads is its output. It
+is live and on the critical path.
 
 `combine_ks_pvalues_fisher`, `bonferroni_correction` and
 `_get_max_consecutive_true_fraction` have no external call sites but are reached
-internally, so they are live.
+internally, so they are live too.
+
+The lesson for anyone auditing this file later is that a grep for `sa.<name>`
+only finds the consumers inside one directory. It does not find a function whose
+output has already been serialized to disk by an earlier stage.
 
 ---
 

@@ -72,9 +72,13 @@ coordinate frame.
 Contains: `compute_orbit_properties`.
 
 Justification for its own module rather than a merge: it is the only function
-that takes orbits rather than stream coordinates, it is the only consumer of
-`scipy.signal.detrend`, and it is the only function with no caller anywhere. A
-separate file makes both its independence and its disuse visible.
+that takes orbits rather than stream coordinates, and it is the only consumer of
+`scipy.signal.detrend`. It sits upstream of the stream analysis, building the
+`df_orbits` table the pipeline consumes, so a separate file matches where it
+falls in the workflow.
+
+(First pass called this a dead-code candidate on the strength of a grep that
+found no call site. Wrong. Corrected in INVENTORY.md and LEGACY.md.)
 
 ### `geometry.py`
 Stream extent in the stream frame, length along phi1, width along phi2, and the
@@ -315,8 +319,8 @@ for `frac_flag_wass`, `frac_consecutive_wass`, `frac_p_gt_005`, `rms_null`,
 `width_deg` and `vel.std.tot_km_s`. Not blocking until Phase 4.
 
 **Q5. Legacy quarantine.**
-Nothing is proposed for `legacy.py`. `compute_orbit_properties` has no caller
-anywhere I can see. Confirm it stays public rather than quarantined.
+Nothing is proposed for `legacy.py`. Answered: `compute_orbit_properties` looked
+dead to a grep but produces `df_orbits` upstream, so it stays public.
 
 **Q6. Repository name.**
 Needed before Phase 5.

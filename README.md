@@ -179,7 +179,7 @@ direction means more disturbed.
 |---|---|---|---|---|---|
 | `length_deg` | Length | `ℓ` | Angular span along phi1 of the region enclosing 90% of the smoothed particle density. | degrees | not a disturbance metric |
 | `width_deg` | Width | `W` | Quantile width in phi2 of the particles inside that region, at the same 90%. | degrees | not a disturbance metric |
-| `vel.std.tot_km_s` | TBD | `v_LOS` | Total 3D velocity dispersion of the masked particles, `sqrt(var_vx + var_vy + var_vz)`, after a degree-5 polynomial in phi1 is removed from each component. | km/s | not a disturbance metric |
+| `vel.std.tot_km_s` | TBD | TBD | Total **3D** velocity dispersion of the masked particles, `sqrt(var_vx + var_vy + var_vz)`, after a degree-5 polynomial in phi1 is removed from each velocity component. Not a line-of-sight dispersion. | km/s | not a disturbance metric |
 
 ### Orbit properties
 
@@ -187,16 +187,17 @@ Copied through from `df_orbits` untouched. `min_pericenter_dist`,
 `max_apocenter_dist` and `mean_dist` in kpc, `n_pericenters` a count, `period`
 in the time units of the orbit integration.
 
-### Two notes on this table
+### A note on this table
 
-`vel.std.tot_km_s` is symbol `v_LOS` above because that is the paper's symbol,
-but the code computes the **total 3D** dispersion, not the line-of-sight
-component. The description column says what the code does. If the paper reports
-a line-of-sight dispersion, that is a different quantity from this column and
-the mapping needs another look.
+`vel.std.tot_km_s` is the total 3D velocity dispersion, not a line-of-sight
+dispersion. `compute_velocity_dispersion` takes columns 3, 4 and 5 of the
+phase-space array, removes a polynomial in phi1 from each, and returns
+`sqrt(var_vx + var_vy + var_vz)`. If you need `v_LOS`, project the velocities
+onto the radial direction first and pass the result to the binned family, which
+is generic in its quantity. See the v_los example above.
 
-The three `TBD` symbols are unfilled because inventing a symbol is worse than
-leaving a gap. Same for the `vel.std.tot_km_s` paper name.
+The remaining `TBD` entries are unfilled because inventing a paper name or a
+symbol is worse than leaving a gap.
 
 ### `min_lambda_band` and the choice of method
 

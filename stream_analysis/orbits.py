@@ -3,14 +3,16 @@
 Orbital diagnostics for an ensemble of integrated orbits.
 
 Independent of any stream frame. This is the only module that takes orbits
-rather than stream coordinates, and it produces the peri, apo, mean distance,
-pericenter count and period columns that the metrics table carries alongside the
-disturbance metrics.
+rather than stream coordinates.
 
-Note that the orbit table used for *No Stream Left Unscathed* (Arora et al.) was
-produced by the simulation pipeline and read from a parquet file, not by this
-function. Nothing in this package calls it. It is kept public because it is a
-complete, documented API for the same quantities.
+:func:`compute_orbit_properties` builds the ``df_orbits`` table that
+:func:`stream_analysis.pipeline.build_metrics_table` consumes. Run it on the
+integrated progenitor orbits, then hand its output to the pipeline, which copies
+``min_pericenter_dist``, ``max_apocenter_dist``, ``mean_dist``, ``n_pericenters``
+and ``period`` straight through into the metrics table.
+
+It is upstream of the stream analysis rather than part of it, which is why
+nothing else in this package calls it.
 """
 from __future__ import annotations
 
