@@ -118,7 +118,7 @@ def wasserstein_null_threshold(
         # A sample of zero draws has no Wasserstein distance to anything, so the
         # threshold is undefined. The original wrote `return np.nan, _`, and `_`
         # is a local bound only by the loop below, so this branch raised
-        # UnboundLocalError. FINDINGS entry 4.
+        # UnboundLocalError.
         return np.nan
 
     # Monte-Carlo branch to estimate confidence intervals

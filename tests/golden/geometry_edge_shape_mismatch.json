@@ -1,6 +1,0 @@
-{
- "_message_verbatim": "phi1/phi2 must match shapes",
- "exc_type": "AssertionError",
- "message": "phi1/phi2 must match shapes",
- "t": "exception"
-}

@@ -1,6 +1,0 @@
-{
- "_message_verbatim": "phi1 must be 1D or 2D array",
- "exc_type": "ValueError",
- "message": "phi1 must be 1D or 2D array",
- "t": "exception"
-}

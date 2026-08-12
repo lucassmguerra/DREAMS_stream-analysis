@@ -1,8 +1,8 @@
 # Worked example
 
-Five calls, in the order the analysis runs, on the 16 m12i streams in the test
-fixture. Every number below was produced by running this file top to bottom, so
-if your output differs, something in your environment does.
+Five calls, in the order the analysis runs, on 16 m12i streams from an N-body
+run. Every number below is real output, produced by running this file top to
+bottom.
 
 ```python
 import numpy as np
@@ -62,9 +62,9 @@ Distances in kpc, period in the time units of `times`. `central_mass` is optiona
 and only feeds `eccentricity_osculating`, which is a point-mass approximation and
 has local meaning only. Pass `mu` directly if your units are not kpc, km/s, Msun.
 
-The index does not have to be a `RangeIndex`. These are the original m12i
-catalogue IDs of a 16-stream subset drawn from a 5000-stream run.
-`build_metrics_table` validates the index and carries it through.
+The index does not have to be a `RangeIndex`. These are catalogue IDs of a
+16-stream subset drawn from a much larger run. `build_metrics_table` validates
+the index and carries it through, rather than assuming row position.
 
 ---
 

@@ -21,7 +21,7 @@ than changes to the contract.
     deliberately produces a different number from the old one, in the
     ``min_lambda_band`` column only. Pass ``method="ratio95",
     snr_threshold=3.0`` to reproduce the published table exactly. See
-    FINDINGS.md entry 5.
+    See the README on the choice of detection method.
 
 Index alignment
     The original indexed the stream arrays with ``df_orbits.index`` and then

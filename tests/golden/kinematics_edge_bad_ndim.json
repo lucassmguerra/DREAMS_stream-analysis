@@ -1,6 +1,0 @@
-{
- "_message_verbatim": "xv must be 2D (N, 6) or 3D (S, N, 6); got shape (6,)",
- "exc_type": "ValueError",
- "message": "xv must be 2D (N, 6) or 3D (S, N, 6); got shape (6,)",
- "t": "exception"
-}

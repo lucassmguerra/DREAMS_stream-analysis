@@ -1,8 +1,0 @@
-{
- "dtype": "float64",
- "k": "kinematics_edge_single_particle_mask_numpy",
- "shape": [
-  16
- ],
- "t": "array"
-}

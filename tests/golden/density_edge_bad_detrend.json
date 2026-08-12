@@ -1,6 +1,0 @@
-{
- "_message_verbatim": "Invalid detrend choice. Must be 'none', 'poly', or 'lowpass'.",
- "exc_type": "ValueError",
- "message": "Invalid detrend choice. Must be 'none', 'poly', or 'lowpass'.",
- "t": "exception"
-}

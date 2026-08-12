@@ -36,7 +36,7 @@ __all__ = [
     "_get_max_consecutive_true_fraction",
 ]
 
-#: Old name -> new name. Kept in sync with RENAMES.md and tools/cases.py.
+#: Old name -> new name. Kept in sync with RENAMES.md.
 RENAMES: dict[str, str] = {
     "measure_stream_LengthWidth": "measure_stream_length_width",
     "compute_vel_disp_stream": "compute_velocity_dispersion",

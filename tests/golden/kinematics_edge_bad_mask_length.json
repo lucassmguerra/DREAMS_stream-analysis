@@ -1,6 +1,0 @@
-{
- "_message_verbatim": "If mask is 1D it must have length N=10; got 9",
- "exc_type": "ValueError",
- "message": "If mask is 1D it must have length N=10; got 9",
- "t": "exception"
-}

@@ -82,10 +82,9 @@ def compute_velocity_dispersion(
     Bit-for-bit results depend on `use_numba`, because the two backends solve the
     polynomial fit differently. See the module docstring.
 
-    Calling with ``detrend=False`` used to fail to compile under numba, because
-    the jitted body indexes ``phi1`` inside a branch numba cannot prune and
-    ``phi1`` was None. A placeholder array is now supplied. Fixed, see
-    FINDINGS.md entry 2.
+    ``detrend=False`` works under either backend. numba cannot prune the
+    detrending branch at compile time, so the wrapper supplies a placeholder
+    ``phi1`` that the jitted body never reads.
     """
     if detrend and phi1 is None:
         raise ValueError("phi1 must be provided when detrend=True.")
@@ -160,7 +159,7 @@ def compute_velocity_dispersion(
             # of `detrend`, so `phi1[i, j]` inside the `if detrend:` branch has
             # to be typeable even when that branch never runs. A None argument
             # fails to compile. The array is allocated but never read, because
-            # `detrend` is False whenever we get here. FINDINGS entry 2.
+            # `detrend` is False whenever we get here.
             phi1 = np.zeros((S, N), dtype=np.float64)
         sigma_t = _compute_vel_disp_numba(xv, mask, detrend, phi1, poly_degree)
     else:

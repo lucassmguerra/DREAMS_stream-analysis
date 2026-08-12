@@ -173,44 +173,38 @@ sa.SPECTRA.rng_seed           # 12345
 sa.WASSERSTEIN_NULL_FIT.A     # 2.3, from the precomputed 95% null power law
 ```
 
-## Provenance and testing
+## Testing
 
-This package is a reorganization of a single 2239-line file. It happened in two
-stages, and the distinction matters if you are checking numbers.
+```bash
+python -m pytest tests/ -q     # 56 tests, about 15 seconds
+```
 
-**The refactor moved code and changed nothing.** Every function returned
-bitwise-identical output for identical input, proved against golden outputs
-generated from a frozen copy of the original at
-`reference/stream_analysis_source.py`, which the package never imports.
+The suite is self-contained. It runs on seeded synthetic streams, needs no
+simulation data and no network, so a fresh clone can run all of it.
 
-**Then twenty-two logical issues were fixed**, listed in
-[FINDINGS.md](FINDINGS.md) with the location, the patch and the severity of
-each. Ten touched only documentation or dead code. Ten change behavior on inputs
-that used to raise, or remove a side effect, without moving any number. Two
-change a number, both in the detection scan, and together they touch exactly one
-column, `min_lambda_band`.
+## Provenance
+
+This package is a reorganization of a single 2239-line module, `stream_analysis.py`,
+which produced the results in the paper. The reorganization moved code and
+changed nothing. Every function returned bitwise-identical output for identical
+input, checked against golden outputs generated from a frozen copy of the
+original before any code moved.
+
+Twenty-two logical issues were then found and fixed. Ten touched only
+documentation or dead code. Ten change behavior on inputs that used to raise, or
+remove a side effect, without moving any number. Two change a number, both in the
+PSD detection scan, and together they touch exactly one column of the metrics
+table, `min_lambda_band`. To reproduce the published values, pass
+`method=sa.SPECTRA.published_method` and
+`snr_threshold=sa.SPECTRA.published_snr_threshold` as shown above.
+
+The full record is on the [`refactor-provenance`](https://github.com/appy2806/stream-analysis/tree/refactor-provenance)
+branch: the frozen source, the inventory and module plan, all twenty-two issues
+with their locations and patches, the golden outputs, and the bitwise contract
+suite that checks them.
 
 Several functions were renamed. Every old name still works through a deprecation
 shim. See [RENAMES.md](RENAMES.md).
-
-```bash
-python -m pytest tests/ -q                 # 232 tests
-python -m pytest tests/ -q -m "not slow"   # skip the end-to-end pipeline cases
-```
-
-The suite has two tiers, matching that history. `tests/test_contract.py`
-compares everything still bitwise-identical to the original against a stored
-golden, including twenty-one cases that record a raised exception rather than a
-value, because reproducing a failure is part of the contract.
-`tests/test_fixes.py` and `tests/test_detection.py` cover what deliberately
-changed and so cannot have a golden, pinning each fix against explicit
-properties and an independent re-derivation of the formula. `tools/cases.py`
-enumerates the differences under `DIVERGENCES`.
-
-The stream-coordinate fixtures are gitignored. Regenerate them with
-`tools/build_fixtures.py`, the only script allowed to import `nbody_streams`. It
-reads its input locations from environment variables and prints what it expects
-if they are unset.
 
 ## Citation
 

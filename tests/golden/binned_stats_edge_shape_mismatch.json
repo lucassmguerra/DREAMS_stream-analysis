@@ -1,6 +1,0 @@
-{
- "_message_verbatim": "phi1, phi2 must have same length",
- "exc_type": "AssertionError",
- "message": "phi1, phi2 must have same length",
- "t": "exception"
-}

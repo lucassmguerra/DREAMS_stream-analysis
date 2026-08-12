@@ -1,6 +1,0 @@
-{
- "_message_verbatim": "hist_counts must be 1-D (single stream).",
- "exc_type": "ValueError",
- "message": "hist_counts must be 1-D (single stream).",
- "t": "exception"
-}

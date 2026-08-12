@@ -1,6 +1,0 @@
-{
- "_message_verbatim": "sampling must be 'multinomial' or 'poisson'",
- "exc_type": "ValueError",
- "message": "sampling must be 'multinomial' or 'poisson'",
- "t": "exception"
-}

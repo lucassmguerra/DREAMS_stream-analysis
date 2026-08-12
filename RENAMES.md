@@ -54,8 +54,8 @@ Run against a copy first. These are word-boundary matches, so they will not
 touch a longer name that happens to contain one of these.
 
 ```bash
-# Notebooks and scripts, in place.
-find . -name '*.py' -o -name '*.ipynb' | xargs sed -i \
+# Notebooks and scripts, in place. Run against a copy first.
+find . \( -name '*.py' -o -name '*.ipynb' \) -print0 | xargs -0 sed -i \
   -e 's/\bmeasure_stream_LengthWidth\b/measure_stream_length_width/g' \
   -e 's/\bcompute_vel_disp_stream\b/compute_velocity_dispersion/g' \
   -e 's/\bstream_local_binned_stats\b/compute_local_binned_stats/g' \
@@ -67,7 +67,7 @@ find . -name '*.py' -o -name '*.ipynb' | xargs sed -i \
 The keyword rename, only if you passed it by name:
 
 ```bash
-find . -name '*.py' -o -name '*.ipynb' | xargs sed -i \
+find . \( -name '*.py' -o -name '*.ipynb' \) -print0 | xargs -0 sed -i \
   -e 's/\(compute_local_binned_stats([^)]*\)\bphi2=/\1quantity=/g'
 ```
 

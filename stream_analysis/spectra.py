@@ -20,8 +20,8 @@ Detection methods
 ``peak_snr`` is the default. It is the only one of the three that computes an
 actual signal-to-noise ratio per frequency,
 ``SNR(f) = (P_obs(f) - mu_null(f)) / sigma_null(f)``, and reports the shortest
-wavelength still clearing the threshold. It was added after the refactor. See the
-note in FINDINGS.md.
+wavelength still clearing the threshold. ``ratio95`` is the cheapest, and is what
+produced the published values. See the README for the comparison.
 
 Supports the power-spectrum family of *No Stream Left Unscathed* (Arora et al.).
 """
@@ -496,10 +496,10 @@ def detect_stream_psd_metrics(
       rather than Gaussian, so ``P_95 / mu_null`` is not a fixed multiple of
       ``sigma_null / mu_null``.
     - "band_snr" reports the shortest wavelength among bands of exactly `min_bins`
-      frequency bins that clear the threshold. Before this was corrected it
-      reported the upper edge of *any* qualifying band and then minimized, which
-      pinned the answer to the top of the trusted range for every stream. See
-      FINDINGS.md.
+      frequency bins that clear the threshold, which keeps the test local. A scan
+      over every qualifying band would instead be pinned to the top of the
+      trusted range for every stream, because a band spanning the whole range
+      always clears and its upper edge is that top.
     """
     # -- resolve the per-method detection threshold --
     if method not in _DEFAULT_SNR_THRESHOLD:
@@ -516,7 +516,7 @@ def detect_stream_psd_metrics(
         raise ValueError("freqs and psd_obs must have same length.")
     # allow DC in input but we expect positive-only; filter DC out.
     # Bound unconditionally, because psd_all is sliced with it below whether or
-    # not the input carried a non-positive frequency. FINDINGS entry 3.
+    # not the input carried a non-positive frequency.
     pos_mask_all = freqs > 0.0
     if not np.all(pos_mask_all):
         freqs = freqs[pos_mask_all]

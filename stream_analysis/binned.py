@@ -138,9 +138,7 @@ def compute_local_binned_stats(
     Notes
     -----
     A bin that receives no particles yields ``count`` 0 and NaN for every
-    statistic. The original returned a six-element row there against a
-    seven-column frame, so any stream with an empty bin raised inside pandas.
-    Fixed, see FINDINGS.md entry 1.
+    statistic.
 
     The quantity is detrended against phi1 with a cubic polynomial before
     binning, so `mean_<name>` is a residual mean rather than a raw mean.
@@ -217,9 +215,9 @@ def compute_local_binned_stats(
     # ---- Custom statistic function ----
     def compute_bin_stats(values: np.ndarray) -> list:
         if len(values) == 0:
-            # Seven entries, matching `column_names`. The original returned six
-            # here, which made the DataFrame construction below raise for any
-            # stream with an empty bin. FINDINGS entry 1.
+            # Seven entries, matching `column_names`. Returning fewer would let
+            # pandas pad the row silently, which puts NaN in `count` and shifts
+            # values into the wrong columns if any entry is ever non-NaN.
             return [0, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
 
         n = len(values)
@@ -303,8 +301,7 @@ def compute_local_binned_stats(
 
     y_span = (y_max_all - y_min_all) or 1.0
 
-    # Cap the number of panels. The original accepted max_bins_to_plot and never
-    # read it, so a 200-bin request drew 200 panels. FINDINGS entry 9.
+    # Cap the number of panels, so a 200-bin request does not draw 200 of them.
     n_bins_plotted = min(n_bins, max_bins_to_plot)
 
     if axs is None:
@@ -441,18 +438,15 @@ def compute_bin_diagnostics(
     - ddof parameter: bin-level std values are treated as a sample from a population
       of possible bin std values, hence ddof=1 for unbiased estimation.
 
-    - This function works on a copy. The caller's frame is not modified. The
-      original wrote ``wass_thresh_95``, ``norm_wass_to_95`` and
-      ``flag_wass_under_95`` onto it in place and filled missing expected columns
-      with NaN. Fixed, see FINDINGS.md entry 8.
+    - This function works on a copy. The caller's frame is not modified, and
+      calling it twice on one frame gives the same answer twice.
 
     - The docstring of the original described a 6-tuple. The code has always
       returned 7 values. The documentation above now matches the code.
     """
 
-    # Defensive copy. The original wrote its working columns onto the caller's
-    # frame and filled missing expected columns with NaN, in place, while
-    # summarize_bin_metrics took a copy. The two disagreed. FINDINGS entry 8.
+    # Defensive copy, so the working columns added below and the NaN fill for
+    # missing expected columns never reach the caller's frame.
     df = df.copy()
 
     std_col = f"std_{quantity_name}"

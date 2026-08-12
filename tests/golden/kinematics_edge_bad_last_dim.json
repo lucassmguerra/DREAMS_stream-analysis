@@ -1,6 +1,0 @@
-{
- "_message_verbatim": "Last dimension of xv must be 6 (x,y,z,vx,vy,vz); got 5",
- "exc_type": "ValueError",
- "message": "Last dimension of xv must be 6 (x,y,z,vx,vy,vz); got 5",
- "t": "exception"
-}

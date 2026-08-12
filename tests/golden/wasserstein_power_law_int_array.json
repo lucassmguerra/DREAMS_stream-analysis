@@ -1,8 +1,0 @@
-{
- "dtype": "float64",
- "k": "wasserstein_power_law_int_array",
- "shape": [
-  6
- ],
- "t": "array"
-}

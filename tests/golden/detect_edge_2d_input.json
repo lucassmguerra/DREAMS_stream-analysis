@@ -1,6 +1,0 @@
-{
- "_message_verbatim": "freqs and psd_obs must be 1D arrays.",
- "exc_type": "ValueError",
- "message": "freqs and psd_obs must be 1D arrays.",
- "t": "exception"
-}

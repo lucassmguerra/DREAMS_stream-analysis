@@ -1,6 +1,0 @@
-{
- "_message_verbatim": "Must provide either 'nbins' or 'bin_width'",
- "exc_type": "ValueError",
- "message": "Must provide either 'nbins' or 'bin_width'",
- "t": "exception"
-}

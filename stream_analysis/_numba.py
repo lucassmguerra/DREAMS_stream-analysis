@@ -17,7 +17,7 @@ The fallback ``njit`` accepts ``@njit`` and ``@njit(...)`` alike. The original
 shim was ``def njit(nopython=True, cache=True, parallel=True)``, which only
 worked when called. A bare ``@njit`` passed the decorated function in as
 ``nopython`` and returned the inner ``decorator`` instead of the function, which
-then failed at the call site with a confusing signature error. FINDINGS entry 7.
+then failed at the call site with a confusing signature error.
 """
 from __future__ import annotations
 
