@@ -43,8 +43,8 @@ def sa_ref():
 
     Used only by the tests that check the compatibility shims and the
     reference pipeline. The contract tests compare against stored goldens, not
-    against a live reference, so that they still mean something if
-    ``/mnt/d/Research`` is not mounted.
+    against a live reference, so they still mean something without the raw
+    simulation data.
     """
     import importlib.util
 
@@ -65,6 +65,6 @@ def fixtures(api):
     if not (FIXTURE_DIR / "streams_m12i_unperturb.npz").exists():
         pytest.skip(
             "Stream fixtures missing. Regenerate with "
-            "`PYTHONPATH=~/py_scripts python tools/build_fixtures.py`."
+            "`python tools/build_fixtures.py`, see its docstring for the inputs."
         )
     return case_registry.Fixtures(api)

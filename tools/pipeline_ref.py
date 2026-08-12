@@ -3,21 +3,22 @@
 Reference re-implementation of ``return_calc_props_df``.
 
 The pipeline driver never lived in ``stream_analysis.py``. It lives in
-``/mnt/d/Research/GC_streams/src/Stream_morphology_analysis.py`` at line 24, and
-it imports agama, zarr, seaborn and a private utility module, none of which
-belong in this package or its tests.
+``Stream_morphology_analysis.py`` in the simulation repository, and it imports
+agama, zarr, seaborn and a private utility module, none of which belong in
+this package or its tests.
 
 So the end-to-end contract is defined here instead. This module reproduces that
 function statement for statement against whatever ``api`` it is handed, minus
 the three things that are environment rather than computation: the ``tqdm``
-progress bars, the hardcoded parquet write to a Flatiron ceph path, and the
+progress bars, the hardcoded parquet write to a cluster scratch path, and the
 diagnostic prints. ``stream_analysis.pipeline.build_metrics_table`` must match
 its output column for column, dtype for dtype, index and all.
 
 The one knob is ``method``. The original hardcodes ``'ratio95'`` in its inner
-``_compute_PSD_etc_metrics``. ``build_metrics_table`` defaults to ``'band_snr'``
-per the brief. Both settings are exercised as goldens, and the equality check
-against the original's behavior uses ``method='ratio95'``.
+``_compute_PSD_etc_metrics``, and this module keeps that as its default, so the
+equality check against the original's behavior needs no argument.
+``build_metrics_table`` defaults to ``'peak_snr'`` instead, which is the one
+column where the two intentionally differ.
 """
 from __future__ import annotations
 

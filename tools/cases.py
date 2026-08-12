@@ -101,7 +101,7 @@ class Fixtures:
             if not path.exists():
                 raise FileNotFoundError(
                     f"Fixture {path} missing. Regenerate with "
-                    "`PYTHONPATH=~/py_scripts python tools/build_fixtures.py`."
+                    "`python tools/build_fixtures.py`, see its docstring."
                 )
             with np.load(path) as z:
                 self._states[name] = StreamState(

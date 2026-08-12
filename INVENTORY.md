@@ -1,7 +1,7 @@
 # INVENTORY
 
 Inventory of `reference/stream_analysis_source.py`, a frozen copy of
-`/mnt/d/Research/GC_streams/src/stream_analysis.py` (2239 lines, 16 top-level
+the original `stream_analysis.py` (2239 lines, 16 top-level
 functions, 0 classes).
 
 ---
@@ -62,8 +62,8 @@ reached from both `compute_bin_diagnostics` and `plot_metric_stats_detailed`.
 
 ### External call sites
 
-Counted across `/mnt/d/Research/GC_streams/**/*.py` and `**/*.ipynb` on the `sa.`
-prefix, so these are the names Arpit actually calls.
+Counted across the analysis repository's `*.py` and `*.ipynb` on the `sa.`
+prefix, so these are the names actually called.
 
 `measure_stream_LengthWidth`, `stream_local_binned_stats`, `compute_vel_disp_stream`,
 `plot_metric_stats_detailed`, `compute_linearized_density`, `compute_welch_psd_for_resid`,
@@ -71,7 +71,7 @@ prefix, so these are the names Arpit actually calls.
 `wasserstein_null_threshold`.
 
 The pipeline driver `return_calc_props_df` lives outside this file, in
-`/mnt/d/Research/GC_streams/src/Stream_morphology_analysis.py` line 24.
+`Stream_morphology_analysis.py` line 24, in the simulation repository.
 
 ---
 
@@ -80,8 +80,8 @@ The pipeline driver `return_calc_props_df` lives outside this file, in
 None.
 
 `compute_orbit_properties` was listed here in the first pass, because no `sa.`
-call site for it appears in any `.py` or `.ipynb` under
-`/mnt/d/Research/GC_streams/`. Corrected after Arpit pointed it out. It builds
+call site for it appears in any `.py` or `.ipynb` in the analysis
+repository. Corrected after Arpit pointed it out. It builds
 the `df_orbits` table that the pipeline consumes, in the orbit-integration step
 upstream of that directory, so the parquet the pipeline reads is its output. It
 is live and on the critical path.

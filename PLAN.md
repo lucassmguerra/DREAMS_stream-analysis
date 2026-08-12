@@ -163,7 +163,7 @@ often as for its picture. `plot=True` stays the default so behavior is unchanged
 The metrics-table driver.
 
 Contains: `build_metrics_table`, new, mirroring `return_calc_props_df` from
-`/mnt/d/Research/GC_streams/src/Stream_morphology_analysis.py` line 24. Imports
+`Stream_morphology_analysis.py` line 24. Imports
 `binned.py`, `density.py`, `spectra.py`, `config.py`.
 
 ### `legacy.py`
@@ -247,7 +247,7 @@ edges, same `pd.cut`, same `observed=False` grouping.
 ## 5. Phase 1 test plan
 
 Goldens come from `reference/stream_analysis_source.py` only, loaded as `sa_ref`
-by path. Fixtures come from `/mnt/d/Research/GC_streams/example_m12i_streams_forecasting.hdf5`,
+by path. Fixtures come from the m12i forecasting HDF5,
 which holds 16 streams in three states, `unperturb`, `perturb` and
 `perturb_xtrm`, each `(16, 10000, 6)`, plus `progenitor_present` `(16, 6)`. All
 three states become fixtures, so the disturbance metrics are exercised across

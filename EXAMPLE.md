@@ -36,7 +36,7 @@ coordinates at all.
 order, as lookback times, because the function reverses them on entry.
 
 ```python
-z = np.load("step1b_orbit_results.npz", allow_pickle=True)
+z = np.load("orbit_results.npz", allow_pickle=True)      # from your orbit integration
 times, xyz, vxyz = z["t_win"], z["orbit_xyz"], z["orbit_vxyz"]   # (216,), (16,216,3), (16,216,3)
 
 orbits = np.empty((xyz.shape[0], 2), dtype=object)
@@ -246,9 +246,10 @@ the realizations so the observed spectrum and its floor are smoothed identically
 
 The first three scalars do not depend on the detection method. Only
 `min_lambda_band` does, and the three methods are three different statistics.
-`peak_snr` at 5 sigma is the default. Pass
+`peak_snr` at 5 sigma is the default. `ratio95` at 3 is faster and cheaper, and
+is what produced the published values. Pass
 `method=sa.SPECTRA.published_method, snr_threshold=sa.SPECTRA.published_snr_threshold`
-to reproduce the published values. See the README for the comparison.
+to reproduce them. See the README for the comparison.
 
 ---
 
@@ -296,23 +297,23 @@ Which call produces each column, and how it maps to the paper.
 
 | Column | Paper name | Symbol | Produced by | Units | Higher means |
 |---|---|---|---|---|---|
-| `median_norm_wass` | Global disturbance | TBD | Step 4 | dimensionless | more disturbed |
-| `max_norm_wass` | Peak disturbance | TBD | Step 4 | dimensionless | more disturbed |
-| `coef_of_var_stds` | Width variation | `C_w` | Step 4, `std_std_bins / mean_std_bins` | dimensionless | more disturbed |
-| `min_lambda_band` | Minimum detectable scale | `lambda_min` | Step 5d | degrees | coarser structure only |
-| `rms_obs` | RMS density residual | `RMS_delta` | Step 5d | dimensionless | more structured |
-| `excess_power` | Excess power | `P_excess` | Step 5d | dimensionless | more disturbed |
+| `median_norm_wass` | Global disturbance | $D_{\rm global}$ | Step 4 | dimensionless | more disturbed |
+| `max_norm_wass` | Peak disturbance | $D_{\rm peak}$ | Step 4 | dimensionless | more disturbed |
+| `coef_of_var_stds` | Width variation | $C_w$ | Step 4, `std_std_bins / mean_std_bins` | dimensionless | more disturbed |
+| `min_lambda_band` | Minimum detectable scale | $\lambda_{\min}$ | Step 5d | degrees | coarser structure only |
+| `rms_obs` | RMS density fluctuation | $\mathrm{RMS}_\delta$ | Step 5d | dimensionless | more structured |
+| `excess_power` | Excess power | $P_{\rm excess}$ | Step 5d | dimensionless | more disturbed |
 
 ### Stream properties
 
 | Column | Paper name | Symbol | Produced by | Units |
 |---|---|---|---|---|
-| `length_deg` | Length | `ℓ` | Step 2 | degrees |
-| `width_deg` | Width | `W` | Step 2 | degrees |
+| `length_deg` | Length | $\ell$ | Step 2 | degrees |
+| `width_deg` | Width | $W$ | Step 2 | degrees |
 | `vel.std.tot_km_s` | TBD | TBD | Step 3 | km/s |
 
-`vel.std.tot_km_s` is the total 3D dispersion, not `v_LOS`. If you want the
-line-of-sight quantity, project first and feed it through Step 4, which is
+`vel.std.tot_km_s` is the total 3D dispersion, not $v_{\rm LOS}$. If you want
+the line-of-sight quantity, project first and feed it through Step 4, which is
 generic in its quantity.
 
 ### Diagnostics, not paper metrics
@@ -351,3 +352,9 @@ sa.SPECTRA.method                   # "peak_snr"
 sa.SPECTRA.published_method         # "ratio95"
 sa.WASSERSTEIN_NULL_FIT.A           # 2.3, from the 95% null power law
 ```
+
+---
+
+## Reference
+
+> Arora et al., *No Stream Left Unscathed*, [arXiv:2605.16200](https://arxiv.org/abs/2605.16200).

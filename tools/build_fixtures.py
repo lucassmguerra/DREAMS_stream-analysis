@@ -10,17 +10,17 @@ package and its tests never need the simulation data or the N-body code again.
 
 Inputs
 ------
-``data/example_m12i_streams_forecasting.hdf5``
+``$STREAM_FIXTURE_HDF5``, default ``data/example_m12i_streams_forecasting.hdf5``
     16 selected m12i streams in three perturbation states, each of shape
     (16, 10000, 6) in galactocentric phase space, plus the present-day
-    progenitor phase-space vectors and a ``stream_metadata`` group carrying
-    Arpit's published metric values for those same 16 streams.
+    progenitor phase-space vectors and a ``stream_metadata`` group carrying the
+    published metric values for those same 16 streams.
 
-``/mnt/d/Research/GC_streams/analysis/streams_m12i_unperturb_stats_phi2_phi1.parquet``
-    The published metrics table for all 5000 m12i streams. The 16 fixture
+``$STREAM_PUBLISHED_TABLE``
+    The published metrics table for all m12i streams, as parquet. The 16 fixture
     streams are selected out of it by the HDF5 ``index`` dataset. This supplies
     the orbit-property columns, which the HDF5 alone does not carry in full, and
-    it supplies an end-to-end reference for the pipeline.
+    an end-to-end reference for the pipeline.
 
 Outputs
 -------
@@ -44,12 +44,18 @@ The coordinate transform is run with ``optimizer_fit=True``, matching
 ``Stream_morphology_analysis.main``. It is the expensive step, roughly a minute
 per state, which is exactly why its output is frozen into a fixture.
 
-Run from the repository root:
+Run from the repository root, with the two inputs pointed at wherever they live:
 
-    PYTHONPATH=~/py_scripts python tools/build_fixtures.py
+    export STREAM_FIXTURE_HDF5=/path/to/example_m12i_streams_forecasting.hdf5
+    export STREAM_PUBLISHED_TABLE=/path/to/streams_m12i_unperturb_stats_phi2_phi1.parquet
+    python tools/build_fixtures.py
+
+``nbody_streams`` must be importable, so add its parent to PYTHONPATH if it is
+not installed.
 """
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -58,12 +64,20 @@ import numpy as np
 import pandas as pd
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-HDF5_PATH = REPO_ROOT / "data" / "example_m12i_streams_forecasting.hdf5"
 FIXTURE_DIR = REPO_ROOT / "tests" / "fixtures"
 
-PUBLISHED_TABLE = Path(
-    "/mnt/d/Research/GC_streams/analysis/streams_m12i_unperturb_stats_phi2_phi1.parquet"
+#: Raw simulation data. Never committed. Override with the environment variable.
+HDF5_PATH = Path(
+    os.environ.get(
+        "STREAM_FIXTURE_HDF5", REPO_ROOT / "data" / "example_m12i_streams_forecasting.hdf5"
+    )
 )
+
+#: The published metrics table, source of the orbit columns. No default, because
+#: it lives outside this repository.
+PUBLISHED_TABLE = Path(os.environ["STREAM_PUBLISHED_TABLE"]) if os.environ.get(
+    "STREAM_PUBLISHED_TABLE"
+) else None
 
 STATES = ("unperturb", "perturb", "perturb_xtrm")
 
@@ -147,10 +161,10 @@ def build_orbit_fixture(hdf5_path: Path, out_dir: Path) -> pd.DataFrame:
     with h5py.File(hdf5_path, "r") as f:
         stream_index = f["index"][:]
 
-    if not PUBLISHED_TABLE.exists():
+    if PUBLISHED_TABLE is None or not PUBLISHED_TABLE.exists():
         raise FileNotFoundError(
-            f"Published metrics table not found at {PUBLISHED_TABLE}. "
-            "It supplies mean_dist, n_pericenters and period, which the HDF5 "
+            "Set STREAM_PUBLISHED_TABLE to the published metrics parquet. It "
+            "supplies mean_dist, n_pericenters and period, which the HDF5 "
             "stream_metadata group does not carry."
         )
 
@@ -179,8 +193,8 @@ def main() -> int:
     if not HDF5_PATH.exists():
         print(
             f"Source data not found at {HDF5_PATH}.\n"
-            "Copy it from /mnt/d/Research/GC_streams/example_m12i_streams_forecasting.hdf5 "
-            "into data/ first. The data directory is gitignored.",
+            "Set STREAM_FIXTURE_HDF5, or copy the forecasting HDF5 into data/. "
+            "The data directory is gitignored and must stay that way.",
             file=sys.stderr,
         )
         return 1

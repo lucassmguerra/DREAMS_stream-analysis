@@ -11,7 +11,7 @@ Nothing else was even close. Every function is reached from the pipeline, from a
 notebook, or from the upstream orbit-integration step.
 
 `compute_orbit_properties` was briefly listed here as a dead-code candidate,
-because no call site appears under `/mnt/d/Research/GC_streams/`. That was wrong.
+because no call site appears in the analysis repository. That was wrong.
 It builds the `df_orbits` table that `build_metrics_table` consumes, from the
-integrated orbits, upstream of anything in that directory. It is live and on the
-critical path.
+integrated orbits, upstream of anything in that repository. It is live and on
+the critical path.
