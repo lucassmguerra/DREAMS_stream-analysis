@@ -15,24 +15,30 @@ It is a library of helper functions, not a script. Nothing here imports
 
 ## What changed, and what did not
 
-This is a reorganization of a single 2239-line file into a package. Not one
-number moved. Every function returns bitwise-identical output for identical
-input, and the test suite proves it against golden outputs generated from a
-frozen copy of the original, which lives at
+This is a reorganization of a single 2239-line file into a package. It happened
+in two stages, and the distinction matters if you are checking numbers.
+
+**The refactor moved code and changed nothing.** Every function returned
+bitwise-identical output for identical input, proved against golden outputs
+generated from a frozen copy of the original, which lives at
 `reference/stream_analysis_source.py` and is never imported by the package.
+
+**Then twenty-two logical issues were fixed**, listed in
+[FINDINGS.md](FINDINGS.md) with the location, the patch and the severity of each.
+Ten of them touched only documentation or dead code. Ten change behavior on
+inputs that used to raise, or remove a side effect, without moving any number.
+Two change a number, both in the PSD detection scan, and between them they touch
+exactly one column of the metrics table, `min_lambda_band`. See
+[the note on detection methods](#min_lambda_band-and-the-choice-of-method) for
+how to reproduce the published values.
+
+That two-stage history is why the test suite has two tiers. Everything still
+bitwise-identical to the original is checked against a stored golden. Everything
+deliberately changed is checked against explicit properties and an independent
+re-derivation instead, and is enumerated in `tools/cases.py` under `DIVERGENCES`.
 
 Several functions were renamed. Every old name still works through a
 deprecation shim. See [RENAMES.md](RENAMES.md).
-
-Twenty-two logical issues found along the way are reported in
-[FINDINGS.md](FINDINGS.md). Twenty were deliberately left unfixed and are pinned
-by goldens. Two were fixed, both in the PSD detection scan, because the defect
-was an error of understanding rather than a quirk worth preserving. That is the
-only place the package does not reproduce the original, and it touches one column
-of one table. See [the note on detection methods](#min_lambda_band-and-the-choice-of-method).
-
-Read FINDINGS entries 1 and 2 before running anything unfamiliar. Empty phi1 bins
-raise, and the numba velocity dispersion will not compile with `detrend=False`.
 
 ## Install and import
 
@@ -59,7 +65,8 @@ optional. There is no console entry point.
 
 ## Quickstart
 
-End to end, from a phase-space array to the metrics table.
+End to end, from a phase-space array to the metrics table. For a fuller
+walkthrough with real output at every step, see [EXAMPLE.md](EXAMPLE.md).
 
 ```python
 import numpy as np
@@ -129,8 +136,8 @@ rms_obs, rms_null, excess_power, min_lambda_band = sa.detect_stream_psd_metrics(
 )   # method="peak_snr", snr_threshold=5.0 by default
 ```
 
-`compute_bin_diagnostics` writes three columns onto `bins` in place and takes no
-copy. Pass `bins.copy()` if that matters to you. See FINDINGS entry 8.
+`compute_bin_diagnostics` works on a copy and leaves `bins` alone. It used to
+write three columns onto the caller's frame. See FINDINGS entry 8.
 
 ### The binned family is generic in its quantity
 
@@ -174,7 +181,7 @@ direction means more disturbed.
 
 | Code name | Paper name | Symbol | What it is | Units | Sign |
 |---|---|---|---|---|---|
-| `min_lambda_band` | Minimum detectable scale | `lambda_min` | Shortest along-stream wavelength at which the observed density power rises above the sampling noise floor by 5 sigma. The finest structure the data can actually resolve. NaN when nothing clears. | degrees | lower means finer structure is detectable |
+| `min_lambda_band` | Minimum detectable scale | `lambda_min` | Shortest along-stream wavelength at which the observed density power rises 5 sigma above the sampling noise floor. The finest structure the data can actually resolve. NaN when nothing clears. | degrees | lower means finer structure is detectable |
 | `rms_obs` | RMS density residual | `RMS_delta` | Square root of the observed power integrated across the trusted frequency band. The total amplitude of fractional density fluctuation. | dimensionless | higher is more structured |
 | `excess_power` | Excess power | `P_excess` | Integral across the trusted band of the observed power above the null median, clipped at zero. The part of the fluctuation that finite sampling does not explain. | dimensionless, power times frequency | higher is more disturbed |
 | `rms_null` | diagnostic only | | The same integral as `rms_obs`, taken on the Monte Carlo realizations and reduced by their median. The noise floor `rms_obs` should be read against. | dimensionless | reference level, not a measurement of the stream |
@@ -272,7 +279,7 @@ sa.WASSERSTEIN_NULL_FIT.A     # 2.3, from the precomputed 95% null power law
 
 ```bash
 mamba activate aarora_py
-python -m pytest tests/ -q                 # 220 tests, about 100 seconds
+python -m pytest tests/ -q                 # 232 tests, about 2 minutes
 python -m pytest tests/ -q -m "not slow"   # skip the end-to-end pipeline cases
 ```
 
@@ -291,11 +298,13 @@ message.
 `tests/test_pipeline.py` checks `build_metrics_table` against a re-implementation
 of the original `return_calc_props_df` in `tools/pipeline_ref.py`.
 `tests/test_compat.py` checks that no name that resolved before the refactor
-fails to resolve after it. `tests/test_detection.py` covers the one place the
-package deliberately diverges, the PSD detection scan, which by definition has no
-golden. It pins the new behavior against explicit properties and against an
-independent re-derivation of each formula. The divergences are enumerated in
-`tools/cases.py` under `DIVERGENCES`.
+fails to resolve after it.
+
+`tests/test_fixes.py` and `tests/test_detection.py` cover the places the package
+deliberately diverges, which by definition have no golden. They pin each fix, and
+where a fix is narrow they also check that everything outside it still matches the
+frozen source bitwise, which is a stronger statement than a stored blob would
+make. The divergences are enumerated in `tools/cases.py` under `DIVERGENCES`.
 
 ### Regenerating the fixtures
 

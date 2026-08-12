@@ -11,16 +11,35 @@ When numba is installed, ``njit`` and ``prange`` are the real ones and
 ``range`` and ``njit`` becomes a decorator factory that returns the function
 unchanged, so a jitted function still runs, just interpreted.
 
-Caveat, preserved from the original
------------------------------------
-The fallback ``njit`` must be *called*, as ``@njit(...)``. A bare ``@njit``
-decoration passes the decorated function in as ``nopython`` and returns the
-inner ``decorator`` rather than the function, which then fails at the call site
-with a confusing signature error. The only decoration in this package uses
-parentheses, so nothing breaks today. The shape of the shim is kept exactly as
-it was in the source, because changing it is a behavior change. See FINDINGS.md.
+Both decoration forms work
+--------------------------
+The fallback ``njit`` accepts ``@njit`` and ``@njit(...)`` alike. The original
+shim was ``def njit(nopython=True, cache=True, parallel=True)``, which only
+worked when called. A bare ``@njit`` passed the decorated function in as
+``nopython`` and returned the inner ``decorator`` instead of the function, which
+then failed at the call site with a confusing signature error. FINDINGS entry 7.
 """
 from __future__ import annotations
+
+
+def _fallback_njit(*args, **kwargs):
+    """
+    No-op stand-in for ``numba.njit``, used when numba is not installed.
+
+    Handles both ``@njit`` and ``@njit(nopython=True, cache=True, ...)``. Any
+    keyword numba would accept is swallowed and ignored.
+
+    Defined unconditionally rather than inside the ``except ImportError`` branch,
+    so that it can be tested on a machine that does have numba.
+    """
+    if len(args) == 1 and callable(args[0]) and not kwargs:
+        return args[0]  # bare @njit
+
+    def decorator(func):
+        return func
+
+    return decorator
+
 
 try:
     from numba import njit, prange
@@ -29,12 +48,7 @@ try:
 except ImportError:
     NUMBA_AVAILABLE = False
     prange = range
-
-    def njit(nopython=True, cache=True, parallel=True):  # Dummy decorator
-        def decorator(func):
-            return func
-
-        return decorator
+    njit = _fallback_njit
 
     print("Numba not found. Running with pure NumPy/SciPy (might be slower for some operations).")
 

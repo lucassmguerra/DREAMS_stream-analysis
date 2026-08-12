@@ -137,9 +137,10 @@ def compute_local_binned_stats(
 
     Notes
     -----
-    A bin that receives no particles produces a six-element row while populated
-    bins produce seven, and the DataFrame construction then raises. Any stream
-    with an empty bin fails. See FINDINGS.md. Preserved as-is.
+    A bin that receives no particles yields ``count`` 0 and NaN for every
+    statistic. The original returned a six-element row there against a
+    seven-column frame, so any stream with an empty bin raised inside pandas.
+    Fixed, see FINDINGS.md entry 1.
 
     The quantity is detrended against phi1 with a cubic polynomial before
     binning, so `mean_<name>` is a residual mean rather than a raw mean.
@@ -216,7 +217,10 @@ def compute_local_binned_stats(
     # ---- Custom statistic function ----
     def compute_bin_stats(values: np.ndarray) -> list:
         if len(values) == 0:
-            return [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
+            # Seven entries, matching `column_names`. The original returned six
+            # here, which made the DataFrame construction below raise for any
+            # stream with an empty bin. FINDINGS entry 1.
+            return [0, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
 
         n = len(values)
         mean_val = np.mean(values)
@@ -299,12 +303,16 @@ def compute_local_binned_stats(
 
     y_span = (y_max_all - y_min_all) or 1.0
 
+    # Cap the number of panels. The original accepted max_bins_to_plot and never
+    # read it, so a 200-bin request drew 200 panels. FINDINGS entry 9.
+    n_bins_plotted = min(n_bins, max_bins_to_plot)
+
     if axs is None:
-        fig_w = max(6, figsize_per_bin[0] * n_bins)
+        fig_w = max(6, figsize_per_bin[0] * n_bins_plotted)
         fig_h = figsize_per_bin[1]
 
         fig, axs = plt.subplots(
-            1, n_bins, figsize=(fig_w, fig_h), squeeze=False, sharey=True, dpi=300
+            1, n_bins_plotted, figsize=(fig_w, fig_h), squeeze=False, sharey=True, dpi=300
         )
         plt.subplots_adjust(wspace=0.02)
         axs = axs[0]
@@ -312,6 +320,8 @@ def compute_local_binned_stats(
     phi2_grid_res = 200
 
     for i, (bin_interval, points_in_bin) in enumerate(temp_df.groupby("bin", observed=False)):
+        if i >= n_bins_plotted:
+            break
         ax = axs[i]
         # Get bin edges directly from the pandas Interval object
         left, right = bin_interval.left, bin_interval.right
@@ -384,8 +394,8 @@ def compute_bin_diagnostics(
     ----------
     df : pd.DataFrame
         Input DataFrame with expected columns: ['wass_vs_norm', 'ks_p_vs_norm', 'count',
-        'std_<quantity_name>']. Missing columns will be filled with NaN values.
-        Modified in place, see Notes.
+        'std_<quantity_name>']. Missing columns are treated as NaN. Not modified,
+        the function works on a copy.
     ddof : int, default 1
         Degrees of freedom to use for standard deviation of standard deviations.
         Use 1 (default) to treat bin-level std values as a sample from a population.
@@ -431,14 +441,19 @@ def compute_bin_diagnostics(
     - ddof parameter: bin-level std values are treated as a sample from a population
       of possible bin std values, hence ddof=1 for unbiased estimation.
 
-    - This function writes four columns onto `df` in place, ``wass_thresh_95``,
-      ``norm_wass_to_95``, ``flag_wass_under_95``, and fills any missing expected
-      column with NaN. It takes no defensive copy. Pass ``df.copy()`` if the
-      caller's frame must not change. Reported in FINDINGS.md, preserved as-is.
+    - This function works on a copy. The caller's frame is not modified. The
+      original wrote ``wass_thresh_95``, ``norm_wass_to_95`` and
+      ``flag_wass_under_95`` onto it in place and filled missing expected columns
+      with NaN. Fixed, see FINDINGS.md entry 8.
 
     - The docstring of the original described a 6-tuple. The code has always
       returned 7 values. The documentation above now matches the code.
     """
+
+    # Defensive copy. The original wrote its working columns onto the caller's
+    # frame and filled missing expected columns with NaN, in place, while
+    # summarize_bin_metrics took a copy. The two disagreed. FINDINGS entry 8.
+    df = df.copy()
 
     std_col = f"std_{quantity_name}"
 

@@ -169,9 +169,9 @@ def test_quantity_name_renames_columns_only(api):
     # And the diagnostics read the renamed column, giving identical metrics.
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        a = api.compute_bin_diagnostics(default.copy())
-        b = api.compute_bin_diagnostics(renamed.copy(), quantity_name="v_los")
-    assert a == b
+        a = api.compute_bin_diagnostics(default)
+        b = api.compute_bin_diagnostics(renamed, quantity_name="v_los")
+    np.testing.assert_array_equal(np.asarray(a, dtype=float), np.asarray(b, dtype=float))
 
 
 def test_config_values_match_signature_defaults(api):

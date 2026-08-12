@@ -336,7 +336,6 @@ for _state in STATES:
             _state, detrend=True, use_numba=(_backend == "numba")
         )
     CASES[f"kinematics_plain_numpy__{_state}"] = _kin(_state, detrend=False, use_numba=False)
-    CASES[f"kinematics_plain_numba__{_state}"] = _kin(_state, detrend=False, use_numba=True)
 
 
 @case("kinematics_single_stream_numpy")
@@ -362,13 +361,6 @@ def _(api, fx):
     st = fx.state("unperturb")
     mask = np.zeros((16, st.xv.shape[1]), dtype=bool)
     return api.compute_velocity_dispersion(st.xv, mask, use_numba=False)
-
-
-@case("kinematics_edge_empty_mask_numba")
-def _(api, fx):
-    st = fx.state("unperturb")
-    mask = np.zeros((16, st.xv.shape[1]), dtype=bool)
-    return api.compute_velocity_dispersion(st.xv, mask, use_numba=True)
 
 
 @case("kinematics_edge_single_particle_mask_numpy")
@@ -458,23 +450,10 @@ def _(api, fx):
     return api.compute_local_binned_stats(phi1, phi2)
 
 
-@case("binned_stats_edge_empty_bins")
-def _(api, fx):
-    # Six of the eight bins are empty. This raises today, and the exception is
-    # the contract. See FINDINGS.md.
-    phi1, phi2 = synthetic_short_track()
-    return api.compute_local_binned_stats(phi1, phi2)
-
-
 @case("binned_stats_edge_all_nan_quantity")
 def _(api, fx):
     phi1, _ = synthetic_track(2000)
     return api.compute_local_binned_stats(phi1, np.full(phi1.size, np.nan))
-
-
-@case("binned_stats_edge_two_particles")
-def _(api, fx):
-    return api.compute_local_binned_stats(np.array([0.0, 1.0]), np.array([0.5, -0.5]))
 
 
 @case("binned_stats_edge_single_particle")
@@ -521,16 +500,6 @@ def _(api, fx):
     phi1, phi2, L = fx.track("unperturb", 6)
     df = api.compute_local_binned_stats(phi1 / L, phi2)
     return api.compute_bin_diagnostics(df, ddof=0)
-
-
-@case("diagnostics_mutates_input_frame")
-def _(api, fx):
-    # compute_bin_diagnostics adds four columns to the caller's frame in place.
-    # That side effect is part of the observed behavior, so it is pinned here.
-    phi1, phi2, L = fx.track("unperturb", 6)
-    df = api.compute_local_binned_stats(phi1 / L, phi2)
-    api.compute_bin_diagnostics(df)
-    return df
 
 
 @case("diagnostics_edge_missing_columns")
@@ -596,11 +565,6 @@ def _(api, fx):
     return api.wasserstein_null_threshold(
         power_law_fit=False, num_points=50, trials=25, normal_ref_size=500, normal_ref_seed=12345
     )
-
-
-@case("wasserstein_monte_carlo_zero_points")
-def _(api, fx):
-    return api.wasserstein_null_threshold(power_law_fit=False, num_points=0)
 
 
 @case("fisher_combine")
@@ -1114,5 +1078,38 @@ DIVERGENCES: dict[str, str] = {
     "build_metrics_table(method=...)": (
         "Defaults to peak_snr at 5 sigma rather than to the published ratio95 at "
         "3. Only min_lambda_band differs. tests/test_pipeline.py"
+    ),
+    "compute_local_binned_stats, empty bins": (
+        "An empty bin reports count 0 rather than NaN, so the column stays "
+        "integral. Every other column is unchanged, and no metric moves, because "
+        "compute_bin_diagnostics already did count.fillna(0). FINDINGS entry 1. "
+        "tests/test_fixes.py"
+    ),
+    "compute_local_binned_stats(max_bins_to_plot=...)": (
+        "Now honoured. It was accepted and never read. Figures only, no numbers. "
+        "FINDINGS entry 9. tests/test_fixes.py"
+    ),
+    "compute_velocity_dispersion(detrend=False, use_numba=True)": (
+        "Compiles and runs. It used to raise TypingError because the jitted body "
+        "indexes a None phi1 in a branch numba cannot prune. FINDINGS entry 2. "
+        "tests/test_fixes.py"
+    ),
+    "compute_bin_diagnostics": (
+        "Works on a copy. It used to write its working columns onto the caller's "
+        "frame. The returned metrics are unchanged. FINDINGS entry 8. "
+        "tests/test_fixes.py"
+    ),
+    "detect_stream_psd_metrics(freqs strictly positive)": (
+        "Works. pos_mask_all was bound only when the input carried a "
+        "non-positive frequency but used unconditionally to slice psd_all, so "
+        "this raised NameError. FINDINGS entry 3. tests/test_fixes.py"
+    ),
+    "wasserstein_null_threshold(power_law_fit=False, num_points=0)": (
+        "Returns NaN. It used to raise UnboundLocalError on a stray `_`. "
+        "FINDINGS entry 4. tests/test_fixes.py"
+    ),
+    "_numba fallback njit": (
+        "Accepts a bare @njit as well as @njit(...). Only reachable when numba "
+        "is absent. FINDINGS entry 7. tests/test_fixes.py"
     ),
 }

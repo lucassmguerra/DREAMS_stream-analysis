@@ -79,15 +79,13 @@ def compute_velocity_dispersion(
 
     Notes
     -----
-    With numba installed and ``use_numba=True``, calling with ``detrend=False``
-    passes ``phi1=None`` into a jitted function that indexes ``phi1`` inside a
-    branch numba cannot prune at compile time, and compilation fails with a
-    ``TypingError``. Pass ``use_numba=False`` for the undetrended case. Reported
-    in FINDINGS.md, not fixed, because fixing it would change what the function
-    computes for some inputs.
-
     Bit-for-bit results depend on `use_numba`, because the two backends solve the
     polynomial fit differently. See the module docstring.
+
+    Calling with ``detrend=False`` used to fail to compile under numba, because
+    the jitted body indexes ``phi1`` inside a branch numba cannot prune and
+    ``phi1`` was None. A placeholder array is now supplied. Fixed, see
+    FINDINGS.md entry 2.
     """
     if detrend and phi1 is None:
         raise ValueError("phi1 must be provided when detrend=True.")
@@ -157,6 +155,13 @@ def compute_velocity_dispersion(
 
     # Call the (numba-accelerated) worker function
     if NUMBA_AVAILABLE and use_numba:
+        if phi1 is None:
+            # numba types the whole jitted body regardless of the runtime value
+            # of `detrend`, so `phi1[i, j]` inside the `if detrend:` branch has
+            # to be typeable even when that branch never runs. A None argument
+            # fails to compile. The array is allocated but never read, because
+            # `detrend` is False whenever we get here. FINDINGS entry 2.
+            phi1 = np.zeros((S, N), dtype=np.float64)
         sigma_t = _compute_vel_disp_numba(xv, mask, detrend, phi1, poly_degree)
     else:
         sigma_t = _compute_vel_disp_numpy(xv, mask, detrend, phi1, poly_degree)
@@ -283,8 +288,8 @@ def _compute_vel_disp_numba(
     Notes
     -----
     numba types the whole body regardless of the runtime value of `detrend`, so
-    `phi1` must be an array even when `detrend` is False. Passing None fails to
-    compile. See the note on the public wrapper.
+    `phi1` must be an array even when `detrend` is False. The public wrapper
+    supplies a zero array in that case. Passing None here fails to compile.
     """
 
     S, N, _ = xv.shape
@@ -294,7 +299,6 @@ def _compute_vel_disp_numba(
         count = 0
 
         # Allocate max-size buffers
-        x = np.empty(N)
         vx = np.empty(N)
         vy = np.empty(N)
         vz = np.empty(N)
@@ -303,7 +307,6 @@ def _compute_vel_disp_numba(
         # Gather valid particle xv
         for j in range(N):
             if mask[i, j]:
-                x[count] = xv[i, j, 0]
                 vx[count] = xv[i, j, 3]
                 vy[count] = xv[i, j, 4]
                 vz[count] = xv[i, j, 5]

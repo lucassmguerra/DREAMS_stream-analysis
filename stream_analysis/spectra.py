@@ -514,9 +514,11 @@ def detect_stream_psd_metrics(
         raise ValueError("freqs and psd_obs must be 1D arrays.")
     if freqs.size != psd_obs.size:
         raise ValueError("freqs and psd_obs must have same length.")
-    if np.any(freqs <= 0.0):
-        # allow DC in input but we expect positive-only; filter DC out
-        pos_mask_all = freqs > 0.0
+    # allow DC in input but we expect positive-only; filter DC out.
+    # Bound unconditionally, because psd_all is sliced with it below whether or
+    # not the input carried a non-positive frequency. FINDINGS entry 3.
+    pos_mask_all = freqs > 0.0
+    if not np.all(pos_mask_all):
         freqs = freqs[pos_mask_all]
         psd_obs = psd_obs[pos_mask_all]
     if freqs.size == 0:
@@ -527,10 +529,6 @@ def detect_stream_psd_metrics(
     mu_null = None
     null_95_interp = None
     if psd_all is not None:
-        # NOTE: pos_mask_all is only bound when the input carried a non-positive
-        # frequency. Welch always emits DC, so every real call binds it. A caller
-        # passing strictly positive freqs together with psd_all hits a
-        # NameError here. Preserved as-is, reported in FINDINGS.md.
         psd_all = np.asarray(psd_all, dtype=float)[:, pos_mask_all]
         if psd_all.ndim != 2:
             raise ValueError("psd_all must be 2D array (nreal, nfreq_res).")

@@ -77,7 +77,7 @@ def wasserstein_null_threshold(
         as a function of sample size(s). It returns NaN for a sample size of 0.
     float
         If `power_law_fit=False`, the empirical (1 - alpha) quantile of the
-        simulated Wasserstein distances.
+        simulated Wasserstein distances. NaN when `num_points` is 0.
 
     Notes
     -----
@@ -115,11 +115,11 @@ def wasserstein_null_threshold(
         return _power_law
 
     if num_points == 0:
-        # Preserved verbatim from the source. `_` is unbound at this point, so
-        # this branch raises UnboundLocalError rather than returning. Reported in
-        # FINDINGS.md, not fixed, because fixing it would invent a return value
-        # that no caller has ever seen.
-        return np.nan, _  # noqa: F821
+        # A sample of zero draws has no Wasserstein distance to anything, so the
+        # threshold is undefined. The original wrote `return np.nan, _`, and `_`
+        # is a local bound only by the loop below, so this branch raised
+        # UnboundLocalError. FINDINGS entry 4.
+        return np.nan
 
     # Monte-Carlo branch to estimate confidence intervals
     rng = np.random.default_rng(normal_ref_seed)
