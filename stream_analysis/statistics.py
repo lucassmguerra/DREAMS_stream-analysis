@@ -272,5 +272,6 @@ def _normalize_wasserstein(df: pd.DataFrame) -> None:
 
     # Normalized wasserstein (observed / threshold)
     df["norm_wass_to_95"] = df["wass_vs_norm"] / df["wass_thresh_95"]
+    df["weighted_norm_wass_to_95"] = df["wass_vs_norm"] / df["wass_thresh_95"] / np.sqrt(df["count"])
     # Flag per-bin exceedance
     df["flag_wass_under_95"] = df["norm_wass_to_95"] < 1.00
