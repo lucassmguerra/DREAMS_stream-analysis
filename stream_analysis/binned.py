@@ -404,12 +404,16 @@ def compute_bin_diagnostics(
     Returns
     -------
     tuple of float
-        A 7-tuple containing:
+        A 9-tuple containing:
 
         - median_norm_wass : float
             Median normalized Wasserstein distance w.r.t 95% threshold
         - max_norm_wass : float
             Maximum normalized Wasserstein distance w.r.t 95% threshold
+        - median_weighted_norm_wass : float
+            Median normalized Wasserstein distance w.r.t 95% threshold, weighted by 1/sqrt(bin count)
+        - max__weighted_norm_wass : float
+            Maximum normalized Wasserstein distance w.r.t 95% threshold, weighted by 1/sqrt(bin count)
         - frac_flag_wass : float
             Fraction of bins flagged as Gaussian by Wasserstein test (< 1.0 threshold)
         - frac_consecutive_wass : float
@@ -481,6 +485,8 @@ def compute_bin_diagnostics(
     # Metrics to return for printing/flushing/saving
     median_norm_wass = float(df["norm_wass_to_95"].median())  # Use .median() - insensitive to outliers
     max_norm_wass = float(df["norm_wass_to_95"].max())
+    median_weighted_norm_wass = float(df["weighted_norm_wass_to_95"].median())  # Use .median() - insensitive to outliers
+    max_weighted_norm_wass = float(df["weighted_norm_wass_to_95"].max())
     std_std_bins = float(
         df[std_col].std(ddof=ddof)
     )  # Unbiased sample standard deviation estimator with ddof=1 by default
@@ -497,6 +503,8 @@ def compute_bin_diagnostics(
     return (
         median_norm_wass,
         max_norm_wass,
+        median_weighted_norm_wass,
+        max_weighted_norm_wass,
         frac_flag_wass,
         frac_consecutive_wass,
         frac_p_gt_005,
