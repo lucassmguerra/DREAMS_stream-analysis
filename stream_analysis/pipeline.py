@@ -170,6 +170,7 @@ def build_metrics_table(
     n_realizations: int = SPECTRA.n_realizations,
     rng_seed: int = SPECTRA.rng_seed,
     quantity_name: str = "phi2",
+    do_powerspec: bool = True,
     progress: Callable[[Iterable], Iterable] | None = None,
 ) -> pd.DataFrame:
     """
@@ -226,6 +227,8 @@ def build_metrics_table(
         Seed for those realizations.
     quantity_name : str, keyword-only
         Column suffix for the binned quantity. Labelling only.
+    do_powerspec: bool, key-word-only
+        Compute power-spectrum-derived metrics.
     progress : callable or None, keyword-only
         Optional wrapper applied to the per-stream loops, for example ``tqdm``.
 
@@ -323,10 +326,11 @@ def build_metrics_table(
             nperseg=res["nperseg"],
         )
 
-    psd_metrics = [_psd_metrics(phi1[pos, masks[pos]]) for pos in _wrap(positions)]
+    if do_powerspec:
+        psd_metrics = [_psd_metrics(phi1[pos, masks[pos]]) for pos in _wrap(positions)]
 
-    df_psd = pd.DataFrame(psd_metrics, columns=_PSD_COLUMNS, index=df_orbits.index)
-    df_final = pd.concat([df_final, df_psd], axis=1)
+        df_psd = pd.DataFrame(psd_metrics, columns=_PSD_COLUMNS, index=df_orbits.index)
+        df_final = pd.concat([df_final, df_psd], axis=1)
     df_final.index.name = "stream_index"
 
     return _normalize_missing(df_final)
